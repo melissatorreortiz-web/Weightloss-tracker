@@ -300,7 +300,13 @@
 
   <section class="view" id="view-medidas">
     <div class="panel">
-      <h2><span class="n">01</span>Registrar medidas (cm)</h2>
+      <h2><span class="n">01</span>Importar captura (medidas con cinta)</h2>
+      <div class="field"><label>Foto de la pantalla o medida</label><input type="file" accept="image/*" id="measureShotInput" style="width:220px; font-size:11px; color:var(--text-dim);"></div>
+      <div class="note" style="margin-top:8px;">Lee automáticamente cuello, hombro, cofre, cintura, cadera, bíceps, muslos, pantorrillas y muñeca. Revisa los números antes de guardar.</div>
+      <div class="status" id="measureShotStatus" style="margin-top:6px;"></div>
+    </div>
+    <div class="panel">
+      <h2><span class="n">02</span>Registrar medidas (cm)</h2>
       <form class="entry" id="measureForm">
         <div class="field"><label>Fecha</label><input type="date" name="date" required></div>
       </form>
@@ -308,7 +314,7 @@
       <button class="add" id="measureSubmit" type="button" style="margin-top:6px;">Guardar medidas</button>
     </div>
     <div class="panel">
-      <div class="row-between"><h2 style="margin:0"><span class="n">02</span>Historial de medidas</h2><span class="status" id="measureStatus"></span></div>
+      <div class="row-between"><h2 style="margin:0"><span class="n">03</span>Historial de medidas</h2><span class="status" id="measureStatus"></span></div>
       <div style="overflow-x:auto;">
         <table id="measureTable"><thead></thead><tbody></tbody></table>
       </div>
@@ -692,6 +698,33 @@ document.getElementById('weightForm').addEventListener('submit', async e=>{
 });
 
 document.getElementById('measureSubmit').addEventListener('click', submitMeasure);
+
+document.getElementById('measureShotInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const statusEl = document.getElementById('measureShotStatus');
+  statusEl.textContent = 'Leyendo captura...';
+  try{
+    const base64 = await fileToBase64Resized(file, 1024, 0.8);
+    const res = await fetch('/api/extract-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64, type: 'measurements' }),
+    });
+    const result = await res.json();
+    if(!result.ok){ statusEl.textContent = result.error || 'No se pudo leer la captura.'; return; }
+    const d = result.data;
+    MEASURE_FIELDS.forEach(([key])=>{
+      if(d[key] != null){
+        const inp = document.querySelector(`#measureFields input[data-key="${key}"]`);
+        if(inp) inp.value = d[key];
+      }
+    });
+    statusEl.textContent = 'Listo — revisa los números y toca "Guardar medidas".';
+  }catch(err){
+    statusEl.textContent = 'No se pudo procesar la imagen.';
+  }
+});
 
 document.getElementById('bulkImportBtn').addEventListener('click', async ()=>{
   const raw = document.getElementById('bulkImport').value.trim();
