@@ -248,6 +248,11 @@
     <a href="taekwondo.html">Taekwondo</a>
   </nav>
 
+  <nav class="tabs">
+    <button class="active" data-tab="rutina">Rutina</button>
+    <button data-tab="otros">Otros ejercicios</button>
+  </nav>
+
   <section class="view active" id="view-rutina">
     <div class="panel">
       <div class="row-between">
@@ -288,6 +293,32 @@
     <div class="panel">
       <div class="row-between"><h2 style="margin:0"><span class="n">04</span>Historial de sesiones</h2><span class="status" id="rutinaHistCount">0</span></div>
       <table id="rutinaHistTable"><thead><tr><th>Fecha</th><th>Rutina</th><th>Detalle</th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <section class="view" id="view-otros">
+    <div class="panel">
+      <h2><span class="n">01</span>Importar captura (Apple Fitness, etc.)</h2>
+      <div class="field"><label>Foto de la pantalla</label><input type="file" accept="image/*" id="otrosShotInput" style="width:220px; font-size:11px; color:var(--text-dim);"></div>
+      <div class="note" style="margin-top:8px;">Lee automáticamente tipo de actividad, duración, calorías y distancia. Revisa los números antes de guardar.</div>
+      <div class="status" id="otrosShotStatus" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="n">02</span>Registrar actividad</h2>
+      <form class="entry" id="otrosForm">
+        <div class="field"><label>Fecha</label><input type="date" name="date" required></div>
+        <div class="field" style="min-width:160px;"><label>Actividad</label><input type="text" name="tipo" placeholder="ej. Correr, Yoga, Ciclismo" style="width:160px" required></div>
+        <div class="field"><label>Duración (min)</label><input type="number" name="duracion" style="width:90px"></div>
+        <div class="field"><label>Calorías</label><input type="number" name="calorias" style="width:90px"></div>
+        <div class="field"><label>Distancia (km)</label><input type="number" step="0.1" name="distancia" style="width:90px"></div>
+        <button class="add" type="submit">Registrar</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="row-between"><h2 style="margin:0"><span class="n">03</span>Historial</h2><span class="status" id="otrosStatus"></span></div>
+      <table id="otrosTable"><thead><tr><th>Fecha</th><th>Actividad</th><th>Min</th><th>Kcal</th><th>Km</th><th></th></tr></thead><tbody></tbody></table>
     </div>
   </section>
 </div>
@@ -664,6 +695,111 @@ document.getElementById('rutinaDateInput').addEventListener('change', (e) => {
   rState.currentSessionDate = fromInputValue(e.target.value);
   rSaveState();
 });
+
+// ---- Pestañas ----
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('section.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---- Otros ejercicios ----
+let otrosLog = [];
+
+async function otrosLoadAll(){
+  try{
+    const o = await window.storage.get('otros-ejercicios-log');
+    otrosLog = o ? JSON.parse(o.value) : [];
+  }catch(e){ otrosLog = []; }
+  otrosRenderAll();
+}
+async function otrosSave(){ await window.storage.set('otros-ejercicios-log', JSON.stringify(otrosLog)); }
+
+function otrosRenderAll(){
+  const sorted = [...otrosLog].sort((a,b)=> b.date.localeCompare(a.date));
+  const tbody = document.querySelector('#otrosTable tbody');
+  tbody.innerHTML = sorted.map((e,idx)=> `
+    <tr>
+      <td>${e.date}</td><td>${e.tipo}</td><td>${e.duracion ?? '—'}</td><td>${e.calorias ?? '—'}</td><td>${e.distancia ?? '—'}</td>
+      <td><button class="ghost" onclick="otrosDelete(${otrosLog.indexOf(e)})">borrar</button></td>
+    </tr>`).join('');
+  document.getElementById('otrosStatus').textContent = `${otrosLog.length} registro(s)`;
+}
+
+async function otrosDelete(realIdx){
+  otrosLog.splice(realIdx, 1);
+  await otrosSave();
+  otrosRenderAll();
+}
+
+document.getElementById('otrosForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  otrosLog.push({
+    date: fd.get('date') || todayISO(),
+    tipo: fd.get('tipo'),
+    duracion: fd.get('duracion') ? parseFloat(fd.get('duracion')) : null,
+    calorias: fd.get('calorias') ? parseFloat(fd.get('calorias')) : null,
+    distancia: fd.get('distancia') ? parseFloat(fd.get('distancia')) : null,
+  });
+  await otrosSave();
+  e.target.reset();
+  document.querySelector('#otrosForm [name=date]').value = todayISO();
+  otrosRenderAll();
+});
+
+// ---- Importar captura (Apple Fitness, etc.) ----
+function otrosResizeToBase64(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e=>{ img.src = e.target.result; };
+    reader.onerror = reject;
+    img.onload = ()=>{
+      let w = img.width, h = img.height;
+      if(w > h && w > maxDim){ h = h*(maxDim/w); w = maxDim; }
+      else if(h > maxDim){ w = w*(maxDim/h); h = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('otrosShotInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const statusEl = document.getElementById('otrosShotStatus');
+  statusEl.textContent = 'Leyendo captura...';
+  try{
+    const base64 = await otrosResizeToBase64(file, 1024, 0.8);
+    const res = await fetch('/api/extract-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64, type: 'workout' }),
+    });
+    const result = await res.json();
+    if(!result.ok){ statusEl.textContent = result.error || 'No se pudo leer la captura.'; return; }
+    const d = result.data;
+    const form = document.getElementById('otrosForm');
+    if(d.date) form.date.value = d.date;
+    if(d.tipo) form.tipo.value = d.tipo;
+    if(d.duracion != null) form.duracion.value = d.duracion;
+    if(d.calorias != null) form.calorias.value = d.calorias;
+    if(d.distancia != null) form.distancia.value = d.distancia;
+    statusEl.textContent = 'Listo — revisa los datos y toca "Registrar".';
+  }catch(err){
+    statusEl.textContent = 'No se pudo procesar la imagen.';
+  }
+});
+
+otrosLoadAll();
 
 rLoadState();
 rRender();
