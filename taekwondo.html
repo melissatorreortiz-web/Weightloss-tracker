@@ -195,8 +195,41 @@
   }
   .page-nav a.current{ background:var(--accent); color:#04141C; border-color:var(--accent); font-weight:600; }
   .page-nav a.home-link{ background:transparent; border-style:dashed; }
+
+  #ptLoginOverlay{
+    position:fixed; inset:0; background:var(--bg); z-index:9999;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  #ptLoginOverlay.hidden{ display:none; }
+  .login-box{ max-width:320px; width:100%; text-align:center; }
+  .login-box .eyebrow{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:10px; }
+  .login-box h1{ font-family:'Fraunces', serif; font-weight:600; font-size:24px; margin:0 0 24px; color:var(--text); }
+  .login-box input{
+    width:100%; background:var(--bg-panel); border:1px solid var(--border); border-radius:10px;
+    padding:14px; color:var(--text); font-family:'IBM Plex Mono'; font-size:14px; text-align:center;
+    margin-bottom:12px;
+  }
+  .login-box button{
+    width:100%; background:var(--accent); color:#04141C; border:none; border-radius:10px;
+    padding:14px; font-weight:600; font-size:13px; cursor:pointer;
+  }
+  .login-box .login-error{ color:var(--danger); font-size:12px; margin-top:12px; min-height:16px; }
+  #appRoot.pt-locked{ display:none; }
 </style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <body>
+<div id="ptLoginOverlay">
+  <div class="login-box">
+    <span class="eyebrow">ProgressTrackr</span>
+    <h1>Acceso privado</h1>
+    <form id="ptLoginForm">
+      <input type="password" id="ptPasswordInput" placeholder="Contraseña" autocomplete="current-password" required>
+      <button type="submit">Entrar</button>
+      <div class="login-error" id="ptLoginError"></div>
+    </form>
+  </div>
+</div>
+<div id="appRoot">
 <div class="wrap">
 
   <header class="top">
@@ -245,6 +278,43 @@
 </div>
 
 <script>
+
+// ---- Login (contraseña compartida) ----
+(function(){
+  const overlay = document.getElementById('ptLoginOverlay');
+  const root = document.getElementById('appRoot');
+  const form = document.getElementById('ptLoginForm');
+  const errorEl = document.getElementById('ptLoginError');
+
+  if(sessionStorage.getItem('pt-authed') === '1'){
+    overlay.classList.add('hidden');
+  } else {
+    root.classList.add('pt-locked');
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    errorEl.textContent = '';
+    const password = document.getElementById('ptPasswordInput').value;
+    try{
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if(data.ok){
+        sessionStorage.setItem('pt-authed', '1');
+        overlay.classList.add('hidden');
+        root.classList.remove('pt-locked');
+      } else {
+        errorEl.textContent = data.error || 'Contraseña incorrecta';
+      }
+    }catch(err){
+      errorEl.textContent = 'No se pudo verificar. Intenta de nuevo.';
+    }
+  });
+})();
 if (!window.storage) {
   window.storage = {
     async get(key) {
@@ -328,7 +398,66 @@ document.getElementById('tkdForm').addEventListener('submit', async e=>{
 
 document.querySelectorAll('input[type=date]').forEach(inp=> inp.value = todayISO());
 
+
+// ---- Respaldo automático y silencioso a Google Drive ----
+(function(){
+  const DRIVE_CLIENT_ID = '704013904821-4lhe8g9dj6ke7io99qherki4847upcov.apps.googleusercontent.com';
+  const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  const DRIVE_FILE_NAME = 'bitacora-melissa-respaldo.json';
+
+  function collectAllBitacoraData(){
+    const data = {};
+    Object.keys(localStorage).forEach(k=>{
+      if(k.startsWith('bitacora:')) data[k.slice('bitacora:'.length)] = localStorage.getItem(k);
+    });
+    return data;
+  }
+
+  async function findFileId(token){
+    const q = encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name)`, {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const data = await res.json();
+    return (data.files && data.files[0]) ? data.files[0].id : null;
+  }
+
+  async function silentBackup(token){
+    try{
+      const json = JSON.stringify(collectAllBitacoraData());
+      const existingId = await findFileId(token);
+      const metadata = { name: DRIVE_FILE_NAME, mimeType: 'application/json' };
+      const boundary = 'bitacora_boundary';
+      const body =
+        `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
+        `--${boundary}\r\nContent-Type: application/json\r\n\r\n${json}\r\n--${boundary}--`;
+      const url = existingId
+        ? `https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=multipart`
+        : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+      await fetch(url, {
+        method: existingId ? 'PATCH' : 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': `multipart/related; boundary=${boundary}` },
+        body,
+      });
+    }catch(e){ /* silencioso: si falla, no interrumpe el uso de la app */ }
+  }
+
+  function tryAutoBackup(){
+    if(localStorage.getItem('pt-drive-connected') !== '1') return;
+    if(typeof google === 'undefined' || !google.accounts){ setTimeout(tryAutoBackup, 800); return; }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: DRIVE_CLIENT_ID,
+      scope: DRIVE_SCOPE,
+      callback: (resp)=>{ if(!resp.error && resp.access_token) silentBackup(resp.access_token); },
+    });
+    client.requestAccessToken({ prompt: '' });
+  }
+
+  window.addEventListener('load', ()=> setTimeout(tryAutoBackup, 1500));
+})();
+
 loadAll();
 </script>
+</div>
 </body>
 </html>
