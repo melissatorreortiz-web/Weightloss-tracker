@@ -37,7 +37,8 @@ export default async function handler(req, res) {
     );
 
     if (!geminiRes.ok) {
-      return res.status(502).json({ ok: false, error: 'Gemini no respondió correctamente' });
+      const errText = await geminiRes.text();
+      return res.status(502).json({ ok: false, error: 'Gemini error (' + geminiRes.status + '): ' + errText.slice(0, 300) });
     }
 
     const data = await geminiRes.json();
