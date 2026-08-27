@@ -206,9 +206,41 @@
   .home-btn .hb-label{ font-family:'Fraunces', serif; font-size:19px; font-weight:600; }
   .home-btn .hb-sub{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--text-dim); letter-spacing:0.5px; margin-top:3px; display:block; }
   .home-btn .hb-arrow{ font-size:20px; color:var(--accent); flex-shrink:0; }
+
+  #ptLoginOverlay{
+    position:fixed; inset:0; background:var(--bg); z-index:9999;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  #ptLoginOverlay.hidden{ display:none; }
+  .login-box{ max-width:320px; width:100%; text-align:center; }
+  .login-box .eyebrow{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:10px; }
+  .login-box h1{ font-family:'Fraunces', serif; font-weight:600; font-size:24px; margin:0 0 24px; color:var(--text); }
+  .login-box input{
+    width:100%; background:var(--bg-panel); border:1px solid var(--border); border-radius:10px;
+    padding:14px; color:var(--text); font-family:'IBM Plex Mono'; font-size:14px; text-align:center;
+    margin-bottom:12px;
+  }
+  .login-box button{
+    width:100%; background:var(--accent); color:#04141C; border:none; border-radius:10px;
+    padding:14px; font-weight:600; font-size:13px; cursor:pointer;
+  }
+  .login-box .login-error{ color:var(--danger); font-size:12px; margin-top:12px; min-height:16px; }
+  #appRoot.pt-locked{ display:none; }
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <body>
+<div id="ptLoginOverlay">
+  <div class="login-box">
+    <span class="eyebrow">ProgressTrackr</span>
+    <h1>Acceso privado</h1>
+    <form id="ptLoginForm">
+      <input type="password" id="ptPasswordInput" placeholder="Contraseña" autocomplete="current-password" required>
+      <button type="submit">Entrar</button>
+      <div class="login-error" id="ptLoginError"></div>
+    </form>
+  </div>
+</div>
+<div id="appRoot">
 <div class="home-wrap">
   <div class="home-title">
     <span class="eyebrow">ProgressTrackr</span>
@@ -247,6 +279,43 @@
 </div>
 
 <script>
+
+// ---- Login (contraseña compartida) ----
+(function(){
+  const overlay = document.getElementById('ptLoginOverlay');
+  const root = document.getElementById('appRoot');
+  const form = document.getElementById('ptLoginForm');
+  const errorEl = document.getElementById('ptLoginError');
+
+  if(sessionStorage.getItem('pt-authed') === '1'){
+    overlay.classList.add('hidden');
+  } else {
+    root.classList.add('pt-locked');
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    errorEl.textContent = '';
+    const password = document.getElementById('ptPasswordInput').value;
+    try{
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if(data.ok){
+        sessionStorage.setItem('pt-authed', '1');
+        overlay.classList.add('hidden');
+        root.classList.remove('pt-locked');
+      } else {
+        errorEl.textContent = data.error || 'Contraseña incorrecta';
+      }
+    }catch(err){
+      errorEl.textContent = 'No se pudo verificar. Intenta de nuevo.';
+    }
+  });
+})();
 function collectAllData(){
   const data = {};
   Object.keys(localStorage).forEach(k=>{
@@ -310,6 +379,7 @@ function driveInitClient(){
     callback: async (resp)=>{
       if(resp.error){ driveSetStatus('No se pudo conectar: ' + resp.error); return; }
       driveAccessToken = resp.access_token;
+      localStorage.setItem('pt-drive-connected', '1');
       document.getElementById('driveConnectBtn').textContent = 'Respaldar en Google Drive ahora';
       document.getElementById('driveRestoreBtn').style.display = 'inline-block';
       driveSetStatus('Conectado. Guardando respaldo...');
@@ -384,6 +454,16 @@ document.getElementById('driveRestoreBtn').addEventListener('click', ()=>{
   if(!driveAccessToken){ driveSetStatus('Conecta Google Drive primero.'); return; }
   driveRestore();
 });
+
+// ---- Respaldo automático y silencioso al abrir la app ----
+function tryAutoBackup(){
+  if(localStorage.getItem('pt-drive-connected') !== '1') return;
+  if(typeof google === 'undefined' || !google.accounts){ setTimeout(tryAutoBackup, 800); return; }
+  driveInitClient();
+  driveTokenClient.requestAccessToken({ prompt: '' });
+}
+window.addEventListener('load', ()=> setTimeout(tryAutoBackup, 1200));
 </script>
+</div>
 </body>
 </html>
