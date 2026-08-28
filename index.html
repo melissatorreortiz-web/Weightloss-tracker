@@ -227,7 +227,6 @@
   .login-box .login-error{ color:var(--danger); font-size:12px; margin-top:12px; min-height:16px; }
   #appRoot.pt-locked{ display:none; }
 </style>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <body>
 <div id="ptLoginOverlay">
   <div class="login-box">
@@ -270,12 +269,7 @@
     <button class="ghost" id="importBtn" type="button">Importar respaldo</button>
     <input type="file" id="importFile" accept="application/json" style="display:none;">
   </div>
-  <div style="max-width:360px; margin:10px auto 0; width:100%; display:flex; gap:10px; justify-content:center;">
-    <button class="add" id="driveConnectBtn" type="button">Conectar Google Drive</button>
-    <button class="ghost" id="driveRestoreBtn" type="button" style="display:none;">Restaurar desde Drive</button>
-  </div>
-  <div class="status" id="driveStatus" style="text-align:center; margin-top:8px;"></div>
-  <div class="status" id="exportStatus" style="text-align:center; margin-top:6px;"></div>
+  <div class="status" id="exportStatus" style="text-align:center; margin-top:8px;"></div>
 </div>
 
 <script>
@@ -306,6 +300,7 @@
       const data = await res.json();
       if(data.ok){
         sessionStorage.setItem('pt-authed', '1');
+        sessionStorage.setItem('pt-pw', password);
         overlay.classList.add('hidden');
         root.classList.remove('pt-locked');
       } else {
@@ -316,23 +311,25 @@
     }
   });
 })();
-function collectAllData(){
-  const data = {};
-  Object.keys(localStorage).forEach(k=>{
-    if(k.startsWith('bitacora:')) data[k.slice('bitacora:'.length)] = localStorage.getItem(k);
-  });
-  return data;
+function ptAuthHeaders(extra){
+  return Object.assign({ 'x-app-password': sessionStorage.getItem('pt-pw') || '' }, extra || {});
 }
 
-document.getElementById('exportBtn').addEventListener('click', ()=>{
-  const data = collectAllData();
+async function collectAllData(){
+  const res = await fetch('/api/data?list=', { headers: ptAuthHeaders() });
+  const result = await res.json();
+  return result.ok ? result.data : {};
+}
+
+document.getElementById('exportBtn').addEventListener('click', async ()=>{
+  const data = await collectAllData();
   const json = JSON.stringify(data, null, 2);
   const blob = new Blob([json], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   const date = new Date().toISOString().slice(0,10);
   a.href = url;
-  a.download = `bitacora-respaldo-${date}.json`;
+  a.download = `progresstrackr-respaldo-${date}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -348,121 +345,24 @@ document.getElementById('importFile').addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = (ev)=>{
+  reader.onload = async (ev)=>{
     try{
       const data = JSON.parse(ev.target.result);
-      Object.keys(data).forEach(k=>{
-        localStorage.setItem('bitacora:' + k, data[k]);
-      });
-      document.getElementById('exportStatus').textContent = 'Respaldo importado correctamente.';
+      const keys = Object.keys(data);
+      for(const k of keys){
+        await fetch('/api/data', {
+          method: 'POST',
+          headers: ptAuthHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ key: k, value: data[k] }),
+        });
+      }
+      document.getElementById('exportStatus').textContent = `Respaldo importado (${keys.length} registros).`;
     }catch(err){
       document.getElementById('exportStatus').textContent = 'El archivo no es un respaldo válido.';
     }
   };
   reader.readAsText(file);
 });
-
-// ---- Google Drive backup ----
-const DRIVE_CLIENT_ID = '704013904821-4lhe8g9dj6ke7io99qherki4847upcov.apps.googleusercontent.com';
-const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-const DRIVE_FILE_NAME = 'bitacora-melissa-respaldo.json';
-let driveAccessToken = null;
-let driveTokenClient = null;
-
-function driveSetStatus(msg){ document.getElementById('driveStatus').textContent = msg; }
-
-function driveInitClient(){
-  if(driveTokenClient) return;
-  driveTokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: DRIVE_CLIENT_ID,
-    scope: DRIVE_SCOPE,
-    callback: async (resp)=>{
-      if(resp.error){ driveSetStatus('No se pudo conectar: ' + resp.error); return; }
-      driveAccessToken = resp.access_token;
-      localStorage.setItem('pt-drive-connected', '1');
-      document.getElementById('driveConnectBtn').textContent = 'Respaldar en Google Drive ahora';
-      document.getElementById('driveRestoreBtn').style.display = 'inline-block';
-      driveSetStatus('Conectado. Guardando respaldo...');
-      await driveBackup();
-    },
-  });
-}
-
-async function driveFindFileId(){
-  const q = encodeURIComponent(`name='${DRIVE_FILE_NAME}' and trashed=false`);
-  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&spaces=drive&fields=files(id,name)`, {
-    headers: { Authorization: 'Bearer ' + driveAccessToken }
-  });
-  const data = await res.json();
-  return (data.files && data.files[0]) ? data.files[0].id : null;
-}
-
-async function driveBackup(){
-  try{
-    const data = collectAllData();
-    const json = JSON.stringify(data);
-    const existingId = await driveFindFileId();
-    const metadata = { name: DRIVE_FILE_NAME, mimeType: 'application/json' };
-    const boundary = 'bitacora_boundary';
-    const body =
-      `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
-      `--${boundary}\r\nContent-Type: application/json\r\n\r\n${json}\r\n--${boundary}--`;
-
-    const url = existingId
-      ? `https://www.googleapis.com/upload/drive/v3/files/${existingId}?uploadType=multipart`
-      : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
-    const method = existingId ? 'PATCH' : 'POST';
-
-    const res = await fetch(url, {
-      method,
-      headers: { Authorization: 'Bearer ' + driveAccessToken, 'Content-Type': `multipart/related; boundary=${boundary}` },
-      body,
-    });
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    driveSetStatus('Respaldo guardado en Google Drive · ' + new Date().toLocaleTimeString('es-MX'));
-  }catch(err){
-    driveSetStatus('No se pudo guardar en Drive. Intenta de nuevo.');
-  }
-}
-
-async function driveRestore(){
-  try{
-    driveSetStatus('Buscando respaldo en Drive...');
-    const fileId = await driveFindFileId();
-    if(!fileId){ driveSetStatus('No hay respaldo guardado en tu Drive todavía.'); return; }
-    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-      headers: { Authorization: 'Bearer ' + driveAccessToken }
-    });
-    const data = await res.json();
-    Object.keys(data).forEach(k=> localStorage.setItem('bitacora:' + k, data[k]));
-    driveSetStatus('Datos restaurados desde Google Drive.');
-  }catch(err){
-    driveSetStatus('No se pudo restaurar desde Drive.');
-  }
-}
-
-document.getElementById('driveConnectBtn').addEventListener('click', ()=>{
-  driveInitClient();
-  if(driveAccessToken){
-    driveBackup();
-  } else {
-    driveTokenClient.requestAccessToken({ prompt: driveAccessToken ? '' : 'consent' });
-  }
-});
-
-document.getElementById('driveRestoreBtn').addEventListener('click', ()=>{
-  if(!driveAccessToken){ driveSetStatus('Conecta Google Drive primero.'); return; }
-  driveRestore();
-});
-
-// ---- Respaldo automático y silencioso al abrir la app ----
-function tryAutoBackup(){
-  if(localStorage.getItem('pt-drive-connected') !== '1') return;
-  if(typeof google === 'undefined' || !google.accounts){ setTimeout(tryAutoBackup, 800); return; }
-  driveInitClient();
-  driveTokenClient.requestAccessToken({ prompt: '' });
-}
-window.addEventListener('load', ()=> setTimeout(tryAutoBackup, 1200));
 </script>
 </div>
 </body>
