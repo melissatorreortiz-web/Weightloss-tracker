@@ -45,7 +45,8 @@ export default async function handler(req, res) {
     }
 
     const token = crypto.randomBytes(24).toString('hex');
-    const session = { userId: user.id, username: user.username, name: user.name, role: user.role };
+    const pages = user.pages || ['ejercicio', 'comida', 'medidas', 'taekwondo'];
+    const session = { userId: user.id, username: user.username, name: user.name, role: user.role, pages };
 
     await kv(`/set/bitacora:__session__:${token}?EX=604800`, {
       method: 'POST',
@@ -53,7 +54,7 @@ export default async function handler(req, res) {
       body: JSON.stringify(session),
     });
 
-    return res.status(200).json({ ok: true, token, role: user.role, name: user.name, userId: user.id });
+    return res.status(200).json({ ok: true, token, role: user.role, name: user.name, userId: user.id, pages });
   } catch (err) {
     return res.status(500).json({ ok: false, error: 'Error al iniciar sesión' });
   }

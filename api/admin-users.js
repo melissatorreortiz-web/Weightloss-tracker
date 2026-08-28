@@ -44,12 +44,15 @@ export default async function handler(req, res) {
     const users = await getUsers();
 
     if (req.method === 'GET') {
-      const safe = users.map(u => ({ id: u.id, username: u.username, name: u.name, role: u.role }));
+      const safe = users.map(u => ({
+        id: u.id, username: u.username, name: u.name, role: u.role,
+        pages: u.pages || ['ejercicio', 'comida', 'medidas', 'taekwondo'],
+      }));
       return res.status(200).json({ ok: true, users: safe });
     }
 
     if (req.method === 'POST') {
-      const { username, password, name, role } = req.body || {};
+      const { username, password, name, role, pages } = req.body || {};
       if (!username || !password) {
         return res.status(400).json({ ok: false, error: 'Falta usuario o contraseña' });
       }
@@ -59,10 +62,20 @@ export default async function handler(req, res) {
       const salt = crypto.randomBytes(16).toString('hex');
       const hash = hashPassword(password, salt);
       const id = crypto.randomBytes(8).toString('hex');
-      const newUser = { id, username, name: name || username, role: role === 'admin' ? 'admin' : 'client', salt, hash };
+      const allowedPages = Array.isArray(pages) ? pages : ['ejercicio', 'comida', 'medidas', 'taekwondo'];
+      const newUser = { id, username, name: name || username, role: role === 'admin' ? 'admin' : 'client', salt, hash, pages: allowedPages };
       users.push(newUser);
       await saveUsers(users);
-      return res.status(200).json({ ok: true, user: { id, username, name: newUser.name, role: newUser.role } });
+      return res.status(200).json({ ok: true, user: { id, username, name: newUser.name, role: newUser.role, pages: newUser.pages } });
+    }
+
+    if (req.method === 'PATCH') {
+      const { userId, pages } = req.body || {};
+      const user = users.find(u => u.id === userId);
+      if (!user) return res.status(404).json({ ok: false, error: 'Usuario no encontrado' });
+      user.pages = Array.isArray(pages) ? pages : user.pages;
+      await saveUsers(users);
+      return res.status(200).json({ ok: true });
     }
 
     if (req.method === 'DELETE') {
