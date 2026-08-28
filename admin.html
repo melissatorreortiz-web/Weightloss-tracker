@@ -296,6 +296,15 @@
             <option value="admin">Administrador</option>
           </select>
         </div>
+        <div class="field">
+          <label>Acceso a páginas</label>
+          <div style="display:flex; gap:12px; padding-top:8px; font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim);">
+            <label><input type="checkbox" name="page-ejercicio" checked> Ejercicio</label>
+            <label><input type="checkbox" name="page-comida" checked> Comida</label>
+            <label><input type="checkbox" name="page-medidas" checked> Medidas</label>
+            <label><input type="checkbox" name="page-taekwondo" checked> Taekwondo</label>
+          </div>
+        </div>
         <button class="add" type="submit">Agregar</button>
       </form>
       <div class="status" id="addUserStatus" style="margin-top:8px;"></div>
@@ -308,6 +317,18 @@
 
     <div class="panel" id="reportPanel" style="display:none;">
       <div class="row-between"><h2 style="margin:0"><span class="n">03</span>Reporte semanal — <span id="reportUserName"></span></h2><span class="status" id="reportSince"></span></div>
+
+      <div style="margin-top:14px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+        <h3 style="font-family:'Fraunces',serif; font-size:15px; color:var(--accent); margin-bottom:8px;">Acceso a páginas</h3>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim);">
+          <label><input type="checkbox" id="editPageEjercicio"> Ejercicio</label>
+          <label><input type="checkbox" id="editPageComida"> Comida</label>
+          <label><input type="checkbox" id="editPageMedidas"> Medidas</label>
+          <label><input type="checkbox" id="editPageTaekwondo"> Taekwondo</label>
+        </div>
+        <button class="ghost" id="savePermissionsBtn" type="button" style="margin-top:10px;">Guardar acceso</button>
+        <div class="status" id="permissionsStatus" style="margin-top:6px;"></div>
+      </div>
 
       <div style="margin-top:14px;">
         <h3 style="font-family:'Fraunces',serif; font-size:15px; color:var(--accent-2); margin-bottom:6px;">Ejercicio</h3>
@@ -483,6 +504,8 @@ document.getElementById('addUserForm').addEventListener('submit', async (e)=>{
   const fd = new FormData(e.target);
   const statusEl = document.getElementById('addUserStatus');
   statusEl.textContent = 'Agregando...';
+  const allPages = ['ejercicio','comida','medidas','taekwondo'];
+  const pages = allPages.filter(p => e.target.querySelector(`[name="page-${p}"]`).checked);
   try{
     const res = await fetch('/api/admin-users', {
       method: 'POST',
@@ -492,6 +515,7 @@ document.getElementById('addUserForm').addEventListener('submit', async (e)=>{
         username: fd.get('username'),
         password: fd.get('password'),
         role: fd.get('role'),
+        pages,
       }),
     });
     const data = await res.json();
@@ -515,6 +539,13 @@ async function selectUser(userId){
   document.getElementById('reportPanel').style.display = 'block';
   document.getElementById('reportUserName').textContent = user ? user.name : '';
   document.getElementById('reportSince').textContent = 'Cargando...';
+
+  const userPages = user?.pages || ['ejercicio','comida','medidas','taekwondo'];
+  document.getElementById('editPageEjercicio').checked = userPages.includes('ejercicio');
+  document.getElementById('editPageComida').checked = userPages.includes('comida');
+  document.getElementById('editPageMedidas').checked = userPages.includes('medidas');
+  document.getElementById('editPageTaekwondo').checked = userPages.includes('taekwondo');
+  document.getElementById('permissionsStatus').textContent = '';
 
   const res = await fetch('/api/admin-report?userId=' + encodeURIComponent(userId), { headers: authHeaders() });
   const data = await res.json();
@@ -550,6 +581,33 @@ async function selectUser(userId){
   goalsForm.fat.value = meta.fat ?? '';
   goalsForm.carbs.value = meta.carbs ?? '';
 }
+
+document.getElementById('savePermissionsBtn').addEventListener('click', async ()=>{
+  if(!selectedUserId) return;
+  const statusEl = document.getElementById('permissionsStatus');
+  statusEl.textContent = 'Guardando...';
+  const pages = [];
+  if(document.getElementById('editPageEjercicio').checked) pages.push('ejercicio');
+  if(document.getElementById('editPageComida').checked) pages.push('comida');
+  if(document.getElementById('editPageMedidas').checked) pages.push('medidas');
+  if(document.getElementById('editPageTaekwondo').checked) pages.push('taekwondo');
+  try{
+    const res = await fetch('/api/admin-users', {
+      method: 'PATCH',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ userId: selectedUserId, pages }),
+    });
+    const data = await res.json();
+    if(data.ok){
+      statusEl.textContent = 'Acceso actualizado.';
+      loadUsers();
+    } else {
+      statusEl.textContent = data.error || 'No se pudo guardar.';
+    }
+  }catch(err){
+    statusEl.textContent = 'Error de conexión.';
+  }
+});
 
 document.getElementById('editGoalsForm').addEventListener('submit', async (e)=>{
   e.preventDefault();

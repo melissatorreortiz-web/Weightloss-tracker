@@ -259,7 +259,7 @@
       <div><div class="hb-label">Medidas</div><span class="hb-sub">Peso · Cuerpo · Fotos de progreso</span></div>
       <div class="hb-arrow">→</div>
     </a>
-    <a href="taekwondo.html" class="home-btn">
+    <a href="taekwondo.html" class="home-btn" id="tkdHomeBtn">
       <div><div class="hb-label">Taekwondo</div><span class="hb-sub">Cintas · Clases · Exámenes</span></div>
       <div class="hb-arrow">→</div>
     </a>
@@ -298,6 +298,7 @@
     overlay.classList.add('hidden');
     const savedName = sessionStorage.getItem('pt-name');
     if(savedName) document.getElementById('userTitle').textContent = savedName;
+    applyPagePermissions();
   } else {
     root.classList.add('pt-locked');
   }
@@ -317,7 +318,9 @@
       if(data.ok){
         sessionStorage.setItem('pt-token', data.token);
         sessionStorage.setItem('pt-name', data.name || username);
+        sessionStorage.setItem('pt-pages', JSON.stringify(data.pages || ['ejercicio','comida','medidas','taekwondo']));
         document.getElementById('userTitle').textContent = data.name || username;
+        applyPagePermissions();
         overlay.classList.add('hidden');
         root.classList.remove('pt-locked');
       } else if(data.error === 'NO_USERS'){
@@ -330,6 +333,14 @@
     }
   });
 })();
+
+function applyPagePermissions(){
+  try{
+    const pages = JSON.parse(sessionStorage.getItem('pt-pages') || '["ejercicio","comida","medidas","taekwondo"]');
+    const tkdBtn = document.getElementById('tkdHomeBtn');
+    if(tkdBtn) tkdBtn.style.display = pages.includes('taekwondo') ? '' : 'none';
+  }catch(e){}
+}
 function ptAuthHeaders(extra){
   return Object.assign({ 'x-session-token': sessionStorage.getItem('pt-token') || '' }, extra || {});
 }

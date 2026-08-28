@@ -290,6 +290,7 @@
     overlay.classList.add('hidden');
     const savedName = sessionStorage.getItem('pt-name');
     if(savedName) document.getElementById('userTitle').textContent = savedName;
+    checkTaekwondoAccess();
   } else {
     root.classList.add('pt-locked');
   }
@@ -309,9 +310,11 @@
       if(data.ok){
         sessionStorage.setItem('pt-token', data.token);
         sessionStorage.setItem('pt-name', data.name || username);
+        sessionStorage.setItem('pt-pages', JSON.stringify(data.pages || ['ejercicio','comida','medidas','taekwondo']));
         document.getElementById('userTitle').textContent = data.name || username;
         overlay.classList.add('hidden');
         root.classList.remove('pt-locked');
+        checkTaekwondoAccess();
       } else if(data.error === 'NO_USERS'){
         errorEl.textContent = 'Aún no hay cuentas creadas. Pide a tu administrador que te agregue, o crea la cuenta admin en admin.html.';
       } else {
@@ -322,6 +325,19 @@
     }
   });
 })();
+
+function checkTaekwondoAccess(){
+  try{
+    const pages = JSON.parse(sessionStorage.getItem('pt-pages') || '["ejercicio","comida","medidas","taekwondo"]');
+    if(!pages.includes('taekwondo')){
+      document.getElementById('appRoot').innerHTML =
+        '<div class="wrap" style="text-align:center; padding-top:80px;">' +
+        '<p style="color:var(--text-dim); font-family:\'IBM Plex Sans\'; margin-bottom:16px;">No tienes acceso a esta sección.</p>' +
+        '<a href="index.html" class="ghost" style="text-decoration:none; padding:10px 18px; border-radius:8px; display:inline-block;">← Volver al inicio</a>' +
+        '</div>';
+    }
+  }catch(e){}
+}
 if (!window.storage) {
   const ptAuthHeaders = (extra) => Object.assign(
     { 'x-session-token': sessionStorage.getItem('pt-token') || '' },
