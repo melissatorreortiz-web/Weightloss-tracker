@@ -226,6 +226,7 @@
     <span class="eyebrow">ProgressTrackr</span>
     <h1>Acceso privado</h1>
     <form id="ptLoginForm">
+      <input type="text" id="ptUserInput" placeholder="Usuario" autocomplete="username" required>
       <input type="password" id="ptPasswordInput" placeholder="Contraseña" autocomplete="current-password" required>
       <button type="submit">Entrar</button>
       <div class="login-error" id="ptLoginError"></div>
@@ -342,14 +343,14 @@
 
 <script>
 
-// ---- Login (contraseña compartida) ----
+// ---- Login (usuario + contraseña) ----
 (function(){
   const overlay = document.getElementById('ptLoginOverlay');
   const root = document.getElementById('appRoot');
   const form = document.getElementById('ptLoginForm');
   const errorEl = document.getElementById('ptLoginError');
 
-  if(sessionStorage.getItem('pt-authed') === '1'){
+  if(sessionStorage.getItem('pt-token')){
     overlay.classList.add('hidden');
   } else {
     root.classList.add('pt-locked');
@@ -358,31 +359,34 @@
   form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     errorEl.textContent = '';
+    const username = document.getElementById('ptUserInput').value;
     const password = document.getElementById('ptPasswordInput').value;
     try{
       const res = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
       if(data.ok){
-        sessionStorage.setItem('pt-authed', '1');
-        sessionStorage.setItem('pt-pw', password);
+        sessionStorage.setItem('pt-token', data.token);
+        sessionStorage.setItem('pt-name', data.name || username);
         overlay.classList.add('hidden');
         root.classList.remove('pt-locked');
+      } else if(data.error === 'NO_USERS'){
+        errorEl.textContent = 'Aún no hay cuentas creadas. Pide a tu administrador que te agregue, o crea la cuenta admin en admin.html.';
       } else {
-        errorEl.textContent = data.error || 'Contraseña incorrecta';
+        errorEl.textContent = data.error || 'Usuario o contraseña incorrectos';
       }
     }catch(err){
       errorEl.textContent = 'No se pudo verificar. Intenta de nuevo.';
     }
   });
 })();
-// --- window.storage backed by Vercel KV via /api/data (requires the app password) ---
+// --- window.storage backed by Vercel KV via /api/data (requires a logged-in session) ---
 if (!window.storage) {
   const ptAuthHeaders = (extra) => Object.assign(
-    { 'x-app-password': sessionStorage.getItem('pt-pw') || '' },
+    { 'x-session-token': sessionStorage.getItem('pt-token') || '' },
     extra || {}
   );
   window.storage = {
