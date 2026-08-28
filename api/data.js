@@ -1,6 +1,23 @@
+async function kv(path, opts) {
+  const KV_URL = process.env.KV_REST_API_URL;
+  const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+  const r = await fetch(`${KV_URL}${path}`, {
+    ...opts,
+    headers: { Authorization: `Bearer ${KV_TOKEN}`, ...(opts?.headers || {}) },
+  });
+  return r.json();
+}
+
+async function getSession(token) {
+  if (!token) return null;
+  const r = await kv(`/get/${encodeURIComponent('bitacora:__session__:' + token)}`);
+  return r.result ? JSON.parse(r.result) : null;
+}
+
 export default async function handler(req, res) {
-  const pw = req.headers['x-app-password'];
-  if (!pw || pw !== process.env.APP_PASSWORD) {
+  const token = req.headers['x-session-token'];
+  const session = await getSession(token);
+  if (!session) {
     return res.status(401).json({ ok: false, error: 'No autorizado' });
   }
 
@@ -10,15 +27,15 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: 'Almacenamiento no configurado' });
   }
 
-  async function kv(path, opts) {
-    const r = await fetch(`${KV_URL}${path}`, {
-      ...opts,
-      headers: { Authorization: `Bearer ${KV_TOKEN}`, ...(opts?.headers || {}) },
-    });
-    return r.json();
+  // Admin can act on behalf of another user via ?asUser=<userId>, but only to read/write
+  // that user's own namespace — never the __users__ or __session__ system keys.
+  let targetUserId = session.userId;
+  const asUser = req.query?.asUser || req.body?.asUser;
+  if (asUser && session.role === 'admin') {
+    targetUserId = asUser;
   }
 
-  const PREFIX = 'bitacora:';
+  const PREFIX = `bitacora:${targetUserId}:`;
 
   try {
     if (req.method === 'GET') {
