@@ -282,8 +282,31 @@
     </div>
 
     <div class="panel">
-      <div class="row-between"><h2 style="margin:0"><span class="n">03</span>Ejercicios</h2><span class="status" id="rutinaExStatus"></span></div>
+      <h2><span class="n">03</span>Apple Watch — Calentamiento</h2>
+      <div class="field"><label>Foto del resumen</label><input type="file" accept="image/*" id="awWarmupShotInput" style="width:220px; font-size:11px; color:var(--text-dim);"></div>
+      <div class="status" id="awWarmupShotStatus" style="margin-top:6px;"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <div class="field"><label>Duración (min)</label><input type="number" id="awWarmupDuracion" style="width:90px"></div>
+        <div class="field"><label>Calorías activas</label><input type="number" id="awWarmupCalorias" style="width:90px"></div>
+        <div class="field"><label>FC promedio (bpm)</label><input type="number" id="awWarmupFc" style="width:100px"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row-between"><h2 style="margin:0"><span class="n">04</span>Ejercicios</h2><span class="status" id="rutinaExStatus"></span></div>
       <div id="exercisesCard" style="display:flex; flex-direction:column; gap:12px; margin-top:14px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="n">05</span>Apple Watch — Rutina 5×5</h2>
+      <div class="field"><label>Foto del resumen</label><input type="file" accept="image/*" id="awRutinaShotInput" style="width:220px; font-size:11px; color:var(--text-dim);"></div>
+      <div class="status" id="awRutinaShotStatus" style="margin-top:6px;"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <div class="field"><label>Duración (min)</label><input type="number" id="awRutinaDuracion" style="width:90px"></div>
+        <div class="field"><label>Calorías activas</label><input type="number" id="awRutinaCalorias" style="width:90px"></div>
+        <div class="field"><label>FC promedio (bpm)</label><input type="number" id="awRutinaFc" style="width:100px"></div>
+      </div>
+      <div class="note" style="margin-top:8px;">Estos dos registros de Apple Watch se guardan junto con la sesión al tocar "Finalizar sesión".</div>
     </div>
 
     <div class="panel">
@@ -292,8 +315,8 @@
     </div>
 
     <div class="panel">
-      <div class="row-between"><h2 style="margin:0"><span class="n">04</span>Historial de sesiones</h2><span class="status" id="rutinaHistCount">0</span></div>
-      <table id="rutinaHistTable"><thead><tr><th>Fecha</th><th>Rutina</th><th>Detalle</th></tr></thead><tbody></tbody></table>
+      <div class="row-between"><h2 style="margin:0"><span class="n">06</span>Historial de sesiones</h2><span class="status" id="rutinaHistCount">0</span></div>
+      <table id="rutinaHistTable"><thead><tr><th>Fecha</th><th>Rutina</th><th>Detalle</th><th>Apple Watch</th></tr></thead><tbody></tbody></table>
     </div>
   </section>
 
@@ -565,6 +588,39 @@ function rStopWarmupRest() {
 function rAllDone() { return rGetExercises().every((ex) => rGetCompleted(ex) === ex.sets); }
 function rAnyProgress() { return rGetExercises().some((ex) => rGetCompleted(ex) > 0); }
 
+function rGetAppleWatchReading(prefix) {
+  const key = prefix.toLowerCase();
+  const pending = (rState.pendingAppleWatch || {})[key];
+  if (!pending || (!pending.duracion && !pending.calorias && !pending.fcPromedio)) return null;
+  return pending;
+}
+function rClearAppleWatchFields(prefix) {
+  ['Duracion', 'Calorias', 'Fc'].forEach((f) => { document.getElementById(`aw${prefix}${f}`).value = ''; });
+  if (rState.pendingAppleWatch) delete rState.pendingAppleWatch[prefix.toLowerCase()];
+}
+function rSaveAppleWatchField(prefix) {
+  const duracion = document.getElementById(`aw${prefix}Duracion`).value;
+  const calorias = document.getElementById(`aw${prefix}Calorias`).value;
+  const fc = document.getElementById(`aw${prefix}Fc`).value;
+  if (!rState.pendingAppleWatch) rState.pendingAppleWatch = {};
+  rState.pendingAppleWatch[prefix.toLowerCase()] = {
+    duracion: duracion ? parseFloat(duracion) : null,
+    calorias: calorias ? parseFloat(calorias) : null,
+    fcPromedio: fc ? parseFloat(fc) : null,
+  };
+  rSaveState();
+}
+function rRestoreAppleWatchFields() {
+  ['warmup', 'rutina'].forEach((key) => {
+    const pending = (rState.pendingAppleWatch || {})[key];
+    if (!pending) return;
+    const prefix = key === 'warmup' ? 'Warmup' : 'Rutina';
+    if (pending.duracion != null) document.getElementById(`aw${prefix}Duracion`).value = pending.duracion;
+    if (pending.calorias != null) document.getElementById(`aw${prefix}Calorias`).value = pending.calorias;
+    if (pending.fcPromedio != null) document.getElementById(`aw${prefix}Fc`).value = pending.fcPromedio;
+  });
+}
+
 function rFinishSession() {
   if (!rAnyProgress()) return;
   const exercises = rGetExercises();
@@ -572,6 +628,8 @@ function rFinishSession() {
     date: rState.currentSessionDate,
     day: rGetDay(),
     exercises: exercises.map((ex) => ({ id: ex.id, name: ex.name, weight: rGetWeight(ex), setsDone: rGetCompleted(ex), setsTarget: ex.sets })),
+    appleWatchWarmup: rGetAppleWatchReading('Warmup'),
+    appleWatchRutina: rGetAppleWatchReading('Rutina'),
   };
   const newWeights = { ...rState.weights };
   exercises.forEach((ex) => {
@@ -585,6 +643,8 @@ function rFinishSession() {
     history: [entry, ...rState.history].slice(0, 60),
     completed: {}, dayOverride: null, warmupDone: {}, currentSessionDate: new Date().toISOString(),
   };
+  rClearAppleWatchFields('Warmup');
+  rClearAppleWatchFields('Rutina');
   rStopRest(); rStopWarmupRest(); rSaveState(); rRender();
 }
 
@@ -717,6 +777,12 @@ function rRenderHistory() {
     tr.appendChild(dateCell);
     const dayCell = document.createElement('td'); dayCell.textContent = h.day; tr.appendChild(dayCell);
     const detailCell = document.createElement('td'); detailCell.style.fontSize = '10px'; detailCell.textContent = detail; tr.appendChild(detailCell);
+    const awCell = document.createElement('td'); awCell.style.fontSize = '10px';
+    const awParts = [];
+    if (h.appleWatchWarmup) awParts.push(`Calent: ${h.appleWatchWarmup.calorias ?? '—'}kcal, ${h.appleWatchWarmup.fcPromedio ?? '—'}bpm`);
+    if (h.appleWatchRutina) awParts.push(`5x5: ${h.appleWatchRutina.calorias ?? '—'}kcal, ${h.appleWatchRutina.fcPromedio ?? '—'}bpm`);
+    awCell.textContent = awParts.length ? awParts.join(' · ') : '—';
+    tr.appendChild(awCell);
     tbody.appendChild(tr);
   });
 }
@@ -867,7 +933,63 @@ document.getElementById('otrosShotInput').addEventListener('change', async (e)=>
 
 otrosLoadAll();
 
-(async () => { await rLoadState(); rRender(); })();
+// ---- Importar captura de Apple Watch ----
+function awResizeToBase64(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e=>{ img.src = e.target.result; };
+    reader.onerror = reject;
+    img.onload = ()=>{
+      let w = img.width, h = img.height;
+      if(w > h && w > maxDim){ h = h*(maxDim/w); w = maxDim; }
+      else if(h > maxDim){ w = w*(maxDim/h); h = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function setupAppleWatchImport(prefix, inputId, statusId){
+  document.getElementById(inputId).addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById(statusId);
+    statusEl.textContent = 'Leyendo captura...';
+    try{
+      const base64 = await awResizeToBase64(file, 1024, 0.8);
+      const res = await fetch('/api/extract-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64, type: 'applewatch' }),
+      });
+      const result = await res.json();
+      if(!result.ok){ statusEl.textContent = result.error || 'No se pudo leer la captura.'; return; }
+      const d = result.data;
+      if(d.duracion != null) document.getElementById(`aw${prefix}Duracion`).value = d.duracion;
+      if(d.calorias != null) document.getElementById(`aw${prefix}Calorias`).value = d.calorias;
+      if(d.fcPromedio != null) document.getElementById(`aw${prefix}Fc`).value = d.fcPromedio;
+      rSaveAppleWatchField(prefix);
+      statusEl.textContent = 'Datos leídos y guardados — se incluirán al finalizar la sesión.';
+    }catch(err){
+      statusEl.textContent = 'No se pudo procesar la imagen.';
+    }
+  });
+}
+setupAppleWatchImport('Warmup', 'awWarmupShotInput', 'awWarmupShotStatus');
+setupAppleWatchImport('Rutina', 'awRutinaShotInput', 'awRutinaShotStatus');
+
+['Warmup', 'Rutina'].forEach((prefix) => {
+  ['Duracion', 'Calorias', 'Fc'].forEach((f) => {
+    document.getElementById(`aw${prefix}${f}`).addEventListener('change', () => rSaveAppleWatchField(prefix));
+  });
+});
+
+(async () => { await rLoadState(); rRestoreAppleWatchFields(); rRender(); })();
 
 // default dates to today
 document.querySelectorAll('input[type=date]').forEach(inp=> inp.value = todayISO());
