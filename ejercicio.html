@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ProgressTrackr</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ProgressTrackr">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#023047">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#023047;
+    --bg-panel:#07425A;
+    --bg-panel-2:#0B4F68;
+    --text:#D7ECF6;
+    --text-dim:#649CB6;
+    --accent:#FFB703;
+    --accent-soft:#354B39;
+    --accent-2:#219EBC;
+    --danger:#FB8500;
+    --danger-soft:#394337;
+    --border:#11657F;
+  }
+  *{box-sizing:border-box;}
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    min-height:100dvh;
+    overscroll-behavior-y:none;
+  }
+  .wrap{
+    margin-left:env(safe-area-inset-left);
+    margin-right:env(safe-area-inset-right);
+    max-width:920px;
+    padding:calc(32px + env(safe-area-inset-top)) 24px calc(80px + env(safe-area-inset-bottom));
+  }
+  @media (min-width:600px){
+    .wrap{ margin-left:env(safe-area-inset-left); margin-right:auto; padding-left:36px; padding-right:36px; }
+  }
+  header.top{
+    display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:8px;
+    border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:24px;
+  }
+  header.top h1{
+    font-family:'Fraunces', serif; font-weight:600; font-size:30px; margin:0;
+    letter-spacing:0.2px;
+  }
+  header.top .eyebrow{
+    font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--accent); margin-bottom:6px; display:block;
+  }
+  header.top .today{ font-family:'IBM Plex Mono'; font-size:12px; color:var(--text-dim); text-align:right;}
+  nav.tabs{ display:flex; gap:2px; margin-bottom:24px; border:1px solid var(--border); border-radius:10px; overflow-x:auto; -webkit-overflow-scrolling:touch; width:fit-content; max-width:100%;}
+  nav.tabs button{
+    background:var(--bg-panel); color:var(--text-dim); border:none; padding:10px 18px;
+    font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:1px; text-transform:uppercase;
+    cursor:pointer; transition:all .15s; white-space:nowrap; flex-shrink:0;
+  }
+  nav.tabs button.active{ background:var(--accent); color:#04141C; font-weight:600;}
+  nav.tabs button:not(.active):hover{ background:var(--bg-panel-2); color:var(--text);}
+  section.view{ display:none; }
+  section.view.active{ display:block; animation:fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr)); gap:12px; margin-bottom:24px;}
+  .card{
+    background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; padding:16px 18px;
+    position:relative;
+  }
+  .card::before{
+    content:''; position:absolute; top:8px; left:8px; width:6px; height:6px; border-top:1px solid var(--accent); border-left:1px solid var(--accent);
+  }
+  .card .label{ font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); margin-bottom:6px;}
+  .card .value{ font-family:'Fraunces', serif; font-size:28px; font-weight:600; color:var(--text);}
+  .card .value small{ font-size:14px; color:var(--text-dim); font-family:'IBM Plex Sans';}
+  .card .delta{ font-family:'IBM Plex Mono'; font-size:11px; margin-top:4px;}
+  .delta.down{ color:var(--accent-2);}
+  .delta.up{ color:var(--danger);}
+
+  .panel{ background:var(--bg-panel); border:1px solid var(--border); border-radius:12px; padding:20px; margin-bottom:20px;}
+  .panel h2{ font-family:'Fraunces', serif; font-size:18px; margin:0 0 14px; font-weight:600;}
+  .panel h2 .n{ color:var(--accent); font-family:'IBM Plex Mono'; font-size:12px; margin-right:8px;}
+
+  svg.chart{ width:100%; height:180px; display:block; }
+  svg.chart .line{ fill:none; stroke:var(--accent); stroke-width:2; }
+  svg.chart .fill{ fill:url(#g1); opacity:.5; }
+  svg.chart .grid-line{ stroke:var(--border); stroke-width:1; }
+  svg.chart .pt{ fill:var(--accent); }
+  svg.chart text{ font-family:'IBM Plex Mono'; font-size:9px; fill:var(--text-dim); }
+
+  table{ width:100%; border-collapse:collapse; font-family:'IBM Plex Mono'; font-size:12px;}
+  th{ text-align:left; color:var(--text-dim); font-weight:500; padding:6px 8px; border-bottom:1px solid var(--border); text-transform:uppercase; font-size:10px; letter-spacing:1px;}
+  td{ padding:7px 8px; border-bottom:1px solid var(--border); color:var(--text);}
+  tr:last-child td{ border-bottom:none;}
+  tr:hover td{ background:var(--bg-panel-2);}
+
+  form.entry{ display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; align-items:flex-end;}
+  .field{ display:flex; flex-direction:column; gap:4px;}
+  .field label{ font-family:'IBM Plex Mono'; font-size:9px; text-transform:uppercase; letter-spacing:1px; color:var(--text-dim);}
+  .field input{
+    background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px 10px;
+    color:var(--text); font-family:'IBM Plex Mono'; font-size:12px; width:100px;
+  }
+  .field input:focus{ outline:none; border-color:var(--accent);}
+  button.add{
+    background:var(--accent); color:#04141C; border:none; border-radius:6px; padding:9px 16px;
+    font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:600;
+    cursor:pointer;
+  }
+  button.add:hover{ filter:brightness(1.08); }
+  button.ghost{
+    background:none; border:1px solid var(--border); color:var(--text-dim); border-radius:6px; padding:5px 10px;
+    font-family:'IBM Plex Mono'; font-size:10px; cursor:pointer;
+  }
+  button.ghost:hover{ border-color:var(--danger); color:var(--danger);}
+
+  .measure-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:8px; margin-bottom:10px;}
+  .bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px;}
+  .bar-row .bar-label{ width:110px; font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim);}
+  .bar-track{ flex:1; height:10px; background:var(--bg); border-radius:5px; overflow:hidden; border:1px solid var(--border);}
+  .bar-fill{ height:100%; background:var(--accent); border-radius:5px 0 0 5px;}
+  .bar-fill.over{ background:var(--danger);}
+  .bar-row .bar-num{ width:110px; text-align:right; font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim);}
+
+  .note{ font-family:'IBM Plex Sans'; font-size:12px; color:var(--text-dim); margin-top:14px; line-height:1.6; border-top:1px dashed var(--border); padding-top:12px;}
+  .row-between{ display:flex; justify-content:space-between; align-items:center; }
+  .status{ font-family:'IBM Plex Mono'; font-size:10px; color:var(--text-dim); }
+
+  .warmup-round-wrap{ display:flex; flex-direction:column; gap:6px; }
+  .warmup-round{ display:flex; align-items:center; gap:8px; }
+  .warmup-round-label{ font-family:'IBM Plex Mono'; color:var(--text-dim); font-size:12px; width:16px; flex-shrink:0; }
+  .warmup-step{
+    flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    padding:8px 4px; border-radius:8px; border:1px solid var(--border); background:var(--bg);
+    cursor:pointer; font-family:'IBM Plex Sans'; color:var(--text);
+  }
+  .warmup-step.done{ background:var(--accent); border-color:var(--accent); color:#04141C; }
+  .warmup-step .wlabel{ font-size:11px; font-weight:600; }
+  .warmup-step .wdetail{ font-size:10px; color:var(--text-dim); }
+  .warmup-step.done .wdetail{ color:#04141C; opacity:.75; }
+
+  .ex-card{ background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:14px; }
+  .ex-card.finished{ border-color:var(--accent-2); }
+  .ex-head{ display:flex; align-items:flex-start; justify-content:space-between; }
+  .ex-name{ font-family:'Fraunces', serif; font-size:16px; font-weight:600; }
+  .ex-scheme{ font-family:'IBM Plex Mono'; font-size:11px; color:var(--text-dim); margin-top:2px; }
+  .weight-row{ display:flex; align-items:center; gap:10px; margin-top:10px; }
+  .stepper-btn{
+    background:var(--bg-panel-2); border:1px solid var(--border); color:var(--text); width:28px; height:28px;
+    border-radius:999px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px;
+  }
+  .weight-val{ font-family:'Fraunces', serif; font-size:20px; font-weight:600; min-width:60px; text-align:center; }
+  .plate-row{ display:flex; gap:6px; margin-top:10px; }
+  .plate{ flex:1; height:26px; border-radius:6px; border:2px solid var(--border); background:transparent; cursor:pointer; }
+  .plate.filled{ background:var(--accent-2); border-color:var(--accent-2); }
+  .rest-row{ display:none; align-items:center; gap:8px; margin-top:10px; }
+  .rest-row.active{ display:flex; }
+  .rest-skip{ background:none; border:none; color:var(--text-dim); font-size:11px; text-decoration:underline; cursor:pointer; flex-shrink:0; }
+  .hist-date-btn{ background:none; border:none; color:var(--accent-2); font-size:11px; text-decoration:underline; cursor:pointer; font-family:'IBM Plex Mono'; }
+
+  /* Responsive: wider viewports (landscape phone, tablet, desktop) */
+  @media (min-width:700px){
+    #exercisesCard{ display:grid !important; grid-template-columns:1fr 1fr; gap:12px !important; }
+    .grid{ grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); }
+    .measure-grid{ grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); }
+  }
+  @media (min-width:900px){
+    #warmupCard{ display:grid !important; grid-template-columns:1fr 1fr; gap:12px !important; }
+  }
+  @media (orientation:landscape) and (max-height:500px){
+    .wrap{ padding-top:calc(16px + env(safe-area-inset-top)); }
+    header.top{ margin-bottom:14px; padding-bottom:10px; }
+    nav.tabs{ margin-bottom:14px; }
+    .panel{ padding:14px 16px; margin-bottom:14px; }
+  }
+  .panel{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .panel table{ min-width:480px; }
+
+  .page-nav{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .page-nav a{
+    font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:1px; text-transform:uppercase;
+    color:var(--text-dim); text-decoration:none; padding:8px 14px; border:1px solid var(--border);
+    border-radius:8px; background:var(--bg-panel);
+  }
+  .page-nav a.current{ background:var(--accent); color:#04141C; border-color:var(--accent); font-weight:600; }
+  .page-nav a.home-link{ background:transparent; border-style:dashed; }
+
+  #ptLoginOverlay{
+    position:fixed; inset:0; background:var(--bg); z-index:9999;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  #ptLoginOverlay.hidden{ display:none; }
+  .login-box{ max-width:320px; width:100%; text-align:center; }
+  .login-box .eyebrow{ font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:10px; }
+  .login-box h1{ font-family:'Fraunces', serif; font-weight:600; font-size:24px; margin:0 0 24px; color:var(--text); }
+  .login-box input{
+    width:100%; background:var(--bg-panel); border:1px solid var(--border); border-radius:10px;
+    padding:14px; color:var(--text); font-family:'IBM Plex Mono'; font-size:14px; text-align:center;
+    margin-bottom:12px;
+  }
+  .login-box button{
+    width:100%; background:var(--accent); color:#04141C; border:none; border-radius:10px;
+    padding:14px; font-weight:600; font-size:13px; cursor:pointer;
+  }
+  .login-box .login-error{ color:var(--danger); font-size:12px; margin-top:12px; min-height:16px; }
+  #appRoot.pt-locked{ display:none; }
+</style>
+<body>
+<div id="ptLoginOverlay">
+  <div class="login-box">
+    <span class="eyebrow">ProgressTrackr</span>
+    <h1>Acceso privado</h1>
+    <form id="ptLoginForm">
+      <input type="text" id="ptUserInput" placeholder="Usuario" autocomplete="username" required>
+      <input type="password" id="ptPasswordInput" placeholder="Contraseña" autocomplete="current-password" required>
+      <button type="submit">Entrar</button>
+      <div class="login-error" id="ptLoginError"></div>
+    </form>
+  </div>
+</div>
+<div id="appRoot">
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <span class="eyebrow">ProgressTrackr</span>
+      <h1 id="userTitle">ProgressTrackr</h1>
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div class="today" id="todayLabel"></div>
+      <button class="ghost" id="logoutBtn" type="button">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <nav class="page-nav">
+    <a href="index.html" class="home-link">← Inicio</a>
+    <a href="ejercicio.html" class="current">Ejercicio</a>
+    <a href="comida.html">Comida</a>
+    <a href="medidas.html">Medidas</a>
+    <a href="taekwondo.html">Taekwondo</a>
+    <a href="hormonal.html">Hormonal</a>
+    <a href="animo.html">Ánimo</a>
+  </nav>
+
+  <nav class="tabs">
+    <button class="active" data-tab="rutina">Rutina</button>
+    <button data-tab="otros">Otros ejercicios</button>
+  </nav>
+
+  <section class="view active" id="view-rutina">
+    <div class="panel">
+      <div class="row-between">
+        <h2 style="margin:0"><span class="n">01</span>Sesión de hoy</h2>
+        <span class="status" id="rutinaSessionStatus"></span>
+      </div>
+      <div style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-top:6px;">
+        <div>
+          <div class="value" style="font-size:32px;" id="rutinaDayTitle">RUTINA A</div>
+          <div class="status" id="rutinaDaySub" style="margin-top:4px;"></div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="ghost" id="pickRutinaA" data-day="A">Rutina A</button>
+          <button class="ghost" id="pickRutinaB" data-day="B">Rutina B</button>
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px;">
+        <label>Fecha y hora</label>
+        <input type="datetime-local" id="rutinaDateInput" style="width:200px;">
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="n">02</span>Calentamiento · 5 rondas</h2>
+      <div id="warmupCard" style="display:flex; flex-direction:column; gap:12px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="n">03</span>Apple Watch — Calentamiento</h2>
+      <div class="field"><label>Foto del resumen</label><input type="file" accept="image/*" id="awWarmupShotInput" style="width:220px; font-size:11px; color:var(--text-dim);"></div>
+      <div class="status" id="awWarmupShotStatus" style="margin-top:6px;"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <div class="field"><label>Duración (min)</label><input type="number" id="awWarmupDuracion" style="width:90px"></div>
+        <div class="field"><label>Calorías activas</label><input type="number" id="awWarmupCalorias" style="width:90px"></div>
+        <div class="field"><label>FC promedio (bpm)</label><input type="number" id="awWarmupFc" style="width:100px"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="row-between"><h2 style="margin:0"><span class="n">04</span>Ejercicios</h2><span class="status" id="rutinaExStatus"></span></div>
+      <div id="exercisesCard" style="display:flex; flex-direction:column; gap:12px; margin-top:14px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="n">05</span>Apple Watch — Rutina 5×5</h2>
+      <div class="field"><label>Foto del resumen</label><input type="file" accept="image/*" id="awRutinaShotInput" style="width:220px; font-size:11px; color:var(--text-dim);"></div>
+      <div class="status" id="awRutinaShotStatus" style="margin-top:6px;"></div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <div class="field"><label>Duración (min)</label><input type="number" id="awRutinaDuracion" style="width:90px"></div>
+        <div class="field"><label>Calorías activas</label><input type="number" id="awRutinaCalorias" style="width:90px"></div>
+        <div class="field"><label>FC promedio (bpm)</label><input type="number" id="awRutinaFc" style="width:100px"></div>
+      </div>
+      <div class="note" style="margin-top:8px;">Estos dos registros de Apple Watch se guardan junto con la sesión al tocar "Finalizar sesión".</div>
+    </div>
+
+    <div class="panel">
+      <button class="add" id="finishRutinaBtn" style="width:100%; padding:12px; font-size:12px;" disabled>Finalizar sesión</button>
+      <div class="note" id="finishHint" style="display:none;">El peso solo sube en los ejercicios donde completes todas las series.</div>
+    </div>
+
+    <div class="panel">
+      <div class="row-between"><h2 style="margin:0"><span class="n">06</span>Historial de sesiones</h2><span class="status" id="rutinaHistCount">0</span></div>
+      <table id="rutinaHistTable"><thead><tr><th>Fecha</th><th>Rutina</th><th>Detalle</th><th>Apple Watch</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+
+  <section class="view" id="view-otros">
+    <div class="panel">
+      <h2><span class="n">01</span>Importar captura (Apple Fitness, etc.)</h2>
+      <div class="field"><label>Foto de la pantalla</label><input type="file" accept="image/*" id="otrosShotInput" style="width:220px; font-size:11px; color:var(--text-dim);"></div>
+      <div class="note" style="margin-top:8px;">Lee automáticamente tipo de actividad, duración, calorías y distancia. Revisa los números antes de guardar.</div>
+      <div class="status" id="otrosShotStatus" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="n">02</span>Registrar actividad</h2>
+      <form class="entry" id="otrosForm">
+        <div class="field"><label>Fecha</label><input type="date" name="date" required></div>
+        <div class="field" style="min-width:160px;"><label>Actividad</label><input type="text" name="tipo" placeholder="ej. Correr, Yoga, Ciclismo" style="width:160px" required></div>
+        <div class="field"><label>Duración (min)</label><input type="number" name="duracion" style="width:90px"></div>
+        <div class="field"><label>Calorías</label><input type="number" name="calorias" style="width:90px"></div>
+        <div class="field"><label>Distancia (km)</label><input type="number" step="0.1" name="distancia" style="width:90px"></div>
+        <button class="add" type="submit">Registrar</button>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="row-between"><h2 style="margin:0"><span class="n">03</span>Historial</h2><span class="status" id="otrosStatus"></span></div>
+      <table id="otrosTable"><thead><tr><th>Fecha</th><th>Actividad</th><th>Min</th><th>Kcal</th><th>Km</th><th></th></tr></thead><tbody></tbody></table>
+    </div>
+  </section>
+</div>
+
+<script>
+
+// ---- Login (usuario + contraseña) ----
+(function(){
+  const overlay = document.getElementById('ptLoginOverlay');
+  const root = document.getElementById('appRoot');
+  const form = document.getElementById('ptLoginForm');
+  const errorEl = document.getElementById('ptLoginError');
+
+  if(sessionStorage.getItem('pt-token')){
+    overlay.classList.add('hidden');
+    const savedName = sessionStorage.getItem('pt-name');
+    if(savedName) document.getElementById('userTitle').textContent = savedName;
+  } else {
+    root.classList.add('pt-locked');
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    errorEl.textContent = '';
+    const username = document.getElementById('ptUserInput').value;
+    const password = document.getElementById('ptPasswordInput').value;
+    try{
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if(data.ok){
+        sessionStorage.setItem('pt-token', data.token);
+        sessionStorage.setItem('pt-name', data.name || username);
+        sessionStorage.setItem('pt-pages', JSON.stringify(data.pages || ['ejercicio','comida','medidas','taekwondo']));
+        document.getElementById('userTitle').textContent = data.name || username;
+        overlay.classList.add('hidden');
+        root.classList.remove('pt-locked');
+      } else if(data.error === 'NO_USERS'){
+        errorEl.textContent = 'Aún no hay cuentas creadas. Pide a tu administrador que te agregue, o crea la cuenta admin en admin.html.';
+      } else {
+        errorEl.textContent = data.error || 'Usuario o contraseña incorrectos';
+      }
+    }catch(err){
+      errorEl.textContent = 'No se pudo verificar. Intenta de nuevo.';
+    }
+  });
+})();
+document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  sessionStorage.removeItem('pt-token');
+  sessionStorage.removeItem('pt-name');
+  sessionStorage.removeItem('pt-pages');
+  location.reload();
+});
+
+// --- window.storage backed by Vercel KV via /api/data (requires a logged-in session) ---
+if (!window.storage) {
+  const ptAuthHeaders = (extra) => Object.assign(
+    { 'x-session-token': sessionStorage.getItem('pt-token') || '' },
+    extra || {}
+  );
+  window.storage = {
+    async get(key) {
+      const res = await fetch('/api/data?key=' + encodeURIComponent(key), { headers: ptAuthHeaders() });
+      const data = await res.json();
+      if (!data.ok || data.value === null || data.value === undefined) return null;
+      return { key, value: data.value, shared: false };
+    },
+    async set(key, value) {
+      await fetch('/api/data', {
+        method: 'POST',
+        headers: ptAuthHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ key, value }),
+      });
+      return { key, value, shared: false };
+    },
+    async delete(key) {
+      await fetch('/api/data', {
+        method: 'POST',
+        headers: ptAuthHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify({ key, action: 'delete' }),
+      });
+      return { key, deleted: true, shared: false };
+    },
+    async list(prefix) {
+      const res = await fetch('/api/data?list=' + encodeURIComponent(prefix || ''), { headers: ptAuthHeaders() });
+      const data = await res.json();
+      const keys = data.ok ? Object.keys(data.data) : [];
+      return { keys, shared: false };
+    },
+  };
+}
+
+const todayISO = () => new Date().toISOString().slice(0,10);
+
+document.getElementById('todayLabel').textContent = new Date().toLocaleDateString('es-MX', {year:'numeric', month:'long', day:'numeric'});
+
+// ============ RUTINA (5x5) ============
+
+const REST_SECONDS = 15;
+const DEFAULT_WEIGHT = 20;
+const WARMUP_ROUNDS = 5;
+const WARMUP_STEPS = [
+  { id: 'trote', label: 'Trotar en el sitio', detail: '30 segundos' },
+  { id: 'swings', label: 'KB Swings', detail: '20 reps' },
+  { id: 'jump_rope', label: 'Saltos de cuerda', detail: '10 reps' },
+];
+const RUTINA_PLAN = {
+  A: [
+    { id: 'squat', name: 'Sentadilla', sets: 5, reps: 5, tier: 'main' },
+    { id: 'bench', name: 'Press de banca', sets: 5, reps: 5, tier: 'main' },
+    { id: 'row', name: 'Remo con barra', sets: 5, reps: 5, tier: 'main' },
+    { id: 'shrug', name: 'Encogimientos (shrugs)', sets: 3, reps: 8, tier: 'acc' },
+    { id: 'tricep_ext', name: 'Extensión de tríceps', sets: 3, reps: 8, tier: 'acc' },
+    { id: 'curl', name: 'Curl de bíceps', sets: 3, reps: 8, tier: 'acc' },
+  ],
+  B: [
+    { id: 'squat', name: 'Sentadilla', sets: 5, reps: 5, tier: 'main' },
+    { id: 'deadlift', name: 'Peso muerto', sets: 1, reps: 5, tier: 'main' },
+    { id: 'press', name: 'Press militar', sets: 5, reps: 5, tier: 'main' },
+    { id: 'row', name: 'Remo con barra', sets: 5, reps: 5, tier: 'main' },
+    { id: 'close_bench', name: 'Press cerrado', sets: 3, reps: 8, tier: 'acc' },
+    { id: 'curl', name: 'Curl de bíceps', sets: 3, reps: 8, tier: 'acc' },
+  ],
+};
+const RUTINA_STORAGE_KEY = 'ketogains-5x5-state-html';
+
+function rutinaDefaultState() {
+  return { sessionIndex: 0, weights: {}, history: [], completed: {}, dayOverride: null, warmupDone: {}, currentSessionDate: new Date().toISOString() };
+}
+function toInputValue(iso) {
+  const d = new Date(iso);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function fromInputValue(val) {
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+function formatDateShort(iso) {
+  return new Date(iso).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+let rState = rutinaDefaultState();
+let rRestTimer = null;
+let rWarmupRestTimer = null;
+let rEditingHistIndex = null;
+
+async function rLoadState() {
+  try {
+    const raw = await window.storage.get(RUTINA_STORAGE_KEY);
+    if (raw) rState = { ...rutinaDefaultState(), ...JSON.parse(raw.value) };
+  } catch (e) {}
+}
+async function rSaveState() {
+  try { await window.storage.set(RUTINA_STORAGE_KEY, JSON.stringify(rState)); } catch (e) {}
+}
+function rGetDay() { return rState.dayOverride || (rState.sessionIndex % 2 === 0 ? 'A' : 'B'); }
+function rSetDay(letter) {
+  if (rGetDay() === letter) return;
+  rState.dayOverride = letter;
+  rState.completed = {};
+  rState.warmupDone = {};
+  rStopRest(); rStopWarmupRest();
+  rSaveState(); rRender();
+}
+function rGetExercises() { return RUTINA_PLAN[rGetDay()]; }
+function rGetWeight(ex) { return rState.weights[ex.id] ?? DEFAULT_WEIGHT; }
+function rSetWeight(ex, val) {
+  rState.weights[ex.id] = Math.max(0, Math.round(val * 100) / 100);
+  rSaveState(); rRenderExercises();
+}
+function rGetCompleted(ex) { return rState.completed[ex.id] ?? 0; }
+function rTapPlate(ex, idx) {
+  const cur = rGetCompleted(ex);
+  const marking = idx + 1 !== cur;
+  rState.completed[ex.id] = marking ? idx + 1 : idx;
+  rSaveState();
+  if (marking) { rStartRest(ex.id); } else if (rRestTimer && rRestTimer.exId === ex.id) { rStopRest(); }
+  rRenderExercises();
+}
+
+// ---- Sonido al terminar el descanso ----
+let rAudioCtx = null;
+function rEnsureAudio() {
+  try {
+    if (!rAudioCtx) rAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    else if (rAudioCtx.state === 'suspended') rAudioCtx.resume();
+  } catch (e) {}
+}
+function rPlayBeep() {
+  if (!rAudioCtx) return;
+  try {
+    const osc = rAudioCtx.createOscillator();
+    const gain = rAudioCtx.createGain();
+    osc.connect(gain); gain.connect(rAudioCtx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.25, rAudioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, rAudioCtx.currentTime + 0.5);
+    osc.start();
+    osc.stop(rAudioCtx.currentTime + 0.5);
+  } catch (e) {}
+}
+
+function rStartRest(exId) {
+  rStopRest();
+  rEnsureAudio();
+  rRestTimer = { exId, secondsLeft: REST_SECONDS };
+  rRestTimer.intervalId = setInterval(() => {
+    rRestTimer.secondsLeft -= 1;
+    if (rRestTimer.secondsLeft <= 0) { rPlayBeep(); rStopRest(); }
+    rRenderRestUI();
+  }, 1000);
+  rRenderRestUI();
+}
+function rStopRest() {
+  if (rRestTimer) { clearInterval(rRestTimer.intervalId); rRestTimer = null; }
+  rRenderRestUI();
+}
+function rWarmupKey(round, stepId) { return round + '-' + stepId; }
+function rIsWarmupDone(round, stepId) { return !!rState.warmupDone[rWarmupKey(round, stepId)]; }
+function rIsWarmupRoundDone(round) { return WARMUP_STEPS.every((s) => rIsWarmupDone(round, s.id)); }
+function rToggleWarmup(round, stepId) {
+  const key = rWarmupKey(round, stepId);
+  const marking = !rState.warmupDone[key];
+  rState.warmupDone[key] = marking;
+  rSaveState();
+  if (marking) { rStartWarmupRest(round); }
+  else if (rWarmupRestTimer && rWarmupRestTimer.round === round) { rStopWarmupRest(); }
+  rRenderWarmup();
+}
+function rStartWarmupRest(round) {
+  rStopWarmupRest();
+  rEnsureAudio();
+  rWarmupRestTimer = { round, secondsLeft: REST_SECONDS };
+  rWarmupRestTimer.intervalId = setInterval(() => {
+    rWarmupRestTimer.secondsLeft -= 1;
+    if (rWarmupRestTimer.secondsLeft <= 0) { rPlayBeep(); rStopWarmupRest(); }
+    rRenderWarmupRestUI();
+  }, 1000);
+  rRenderWarmupRestUI();
+}
+function rStopWarmupRest() {
+  if (rWarmupRestTimer) { clearInterval(rWarmupRestTimer.intervalId); rWarmupRestTimer = null; }
+  rRenderWarmupRestUI();
+}
+function rAllDone() { return rGetExercises().every((ex) => rGetCompleted(ex) === ex.sets); }
+function rAnyProgress() { return rGetExercises().some((ex) => rGetCompleted(ex) > 0); }
+
+function rGetAppleWatchReading(prefix) {
+  const key = prefix.toLowerCase();
+  const pending = (rState.pendingAppleWatch || {})[key];
+  if (!pending || (!pending.duracion && !pending.calorias && !pending.fcPromedio)) return null;
+  return pending;
+}
+function rClearAppleWatchFields(prefix) {
+  ['Duracion', 'Calorias', 'Fc'].forEach((f) => { document.getElementById(`aw${prefix}${f}`).value = ''; });
+  if (rState.pendingAppleWatch) delete rState.pendingAppleWatch[prefix.toLowerCase()];
+}
+function rSaveAppleWatchField(prefix) {
+  const duracion = document.getElementById(`aw${prefix}Duracion`).value;
+  const calorias = document.getElementById(`aw${prefix}Calorias`).value;
+  const fc = document.getElementById(`aw${prefix}Fc`).value;
+  if (!rState.pendingAppleWatch) rState.pendingAppleWatch = {};
+  rState.pendingAppleWatch[prefix.toLowerCase()] = {
+    duracion: duracion ? parseFloat(duracion) : null,
+    calorias: calorias ? parseFloat(calorias) : null,
+    fcPromedio: fc ? parseFloat(fc) : null,
+  };
+  rSaveState();
+}
+function rRestoreAppleWatchFields() {
+  ['warmup', 'rutina'].forEach((key) => {
+    const pending = (rState.pendingAppleWatch || {})[key];
+    if (!pending) return;
+    const prefix = key === 'warmup' ? 'Warmup' : 'Rutina';
+    if (pending.duracion != null) document.getElementById(`aw${prefix}Duracion`).value = pending.duracion;
+    if (pending.calorias != null) document.getElementById(`aw${prefix}Calorias`).value = pending.calorias;
+    if (pending.fcPromedio != null) document.getElementById(`aw${prefix}Fc`).value = pending.fcPromedio;
+  });
+}
+
+function rFinishSession() {
+  if (!rAnyProgress()) return;
+  const exercises = rGetExercises();
+  const entry = {
+    date: rState.currentSessionDate,
+    day: rGetDay(),
+    exercises: exercises.map((ex) => ({ id: ex.id, name: ex.name, weight: rGetWeight(ex), setsDone: rGetCompleted(ex), setsTarget: ex.sets })),
+    appleWatchWarmup: rGetAppleWatchReading('Warmup'),
+    appleWatchRutina: rGetAppleWatchReading('Rutina'),
+  };
+  const newWeights = { ...rState.weights };
+  exercises.forEach((ex) => {
+    if (rGetCompleted(ex) === ex.sets) {
+      const bump = ex.tier === 'main' ? 2.5 : 1.25;
+      newWeights[ex.id] = Math.round((rGetWeight(ex) + bump) * 100) / 100;
+    }
+  });
+  rState = {
+    sessionIndex: rState.sessionIndex + 1, weights: newWeights,
+    history: [entry, ...rState.history].slice(0, 60),
+    completed: {}, dayOverride: null, warmupDone: {}, currentSessionDate: new Date().toISOString(),
+  };
+  rClearAppleWatchFields('Warmup');
+  rClearAppleWatchFields('Rutina');
+  rStopRest(); rStopWarmupRest(); rSaveState(); rRender();
+}
+
+function rRenderWarmup() {
+  const card = document.getElementById('warmupCard');
+  card.innerHTML = '';
+  for (let r = 1; r <= WARMUP_ROUNDS; r++) {
+    const wrap = document.createElement('div');
+    wrap.className = 'warmup-round-wrap';
+    const row = document.createElement('div');
+    row.className = 'warmup-round';
+    const label = document.createElement('div');
+    label.className = 'warmup-round-label';
+    label.textContent = r;
+    row.appendChild(label);
+    WARMUP_STEPS.forEach((step) => {
+      const done = rIsWarmupDone(r, step.id);
+      const btn = document.createElement('button');
+      btn.className = 'warmup-step' + (done ? ' done' : '');
+      btn.innerHTML = `<span class="wlabel">${step.label}</span><span class="wdetail">${step.detail}</span>`;
+      btn.addEventListener('click', () => rToggleWarmup(r, step.id));
+      row.appendChild(btn);
+    });
+    wrap.appendChild(row);
+    const restRow = document.createElement('div');
+    restRow.className = 'rest-row';
+    restRow.dataset.warmupRestRow = r;
+    restRow.innerHTML = `<div class="bar-track" style="flex:1;"><div class="bar-fill" data-rest-fill style="width:100%"></div></div><div class="status" data-rest-time></div><button class="rest-skip" data-action="skip">Saltar</button>`;
+    restRow.querySelector('[data-action="skip"]').addEventListener('click', rStopWarmupRest);
+    wrap.appendChild(restRow);
+    card.appendChild(wrap);
+  }
+  rRenderWarmupRestUI();
+}
+function rRenderWarmupRestUI() {
+  document.querySelectorAll('[data-warmup-rest-row]').forEach((row) => row.classList.remove('active'));
+  if (!rWarmupRestTimer) return;
+  const row = document.querySelector(`[data-warmup-rest-row="${rWarmupRestTimer.round}"]`);
+  if (!row) return;
+  row.classList.add('active');
+  row.querySelector('[data-rest-fill]').style.width = (rWarmupRestTimer.secondsLeft / REST_SECONDS * 100) + '%';
+  row.querySelector('[data-rest-time]').textContent = rWarmupRestTimer.secondsLeft + 's';
+}
+
+function rRenderExercises() {
+  const container = document.getElementById('exercisesCard');
+  container.innerHTML = '';
+  rGetExercises().forEach((ex) => {
+    const done = rGetCompleted(ex);
+    const finished = done === ex.sets;
+    const card = document.createElement('div');
+    card.className = 'ex-card' + (finished ? ' finished' : '');
+    card.dataset.exId = ex.id;
+    card.innerHTML = `
+      <div class="ex-head">
+        <div><div class="ex-name">${ex.name}</div><div class="ex-scheme">${ex.sets} × ${ex.reps}</div></div>
+      </div>
+      <div class="weight-row">
+        <button class="stepper-btn" data-action="dec">−</button>
+        <div class="weight-val">${rGetWeight(ex)} <span style="font-size:12px; color:var(--text-dim);">kg</span></div>
+        <button class="stepper-btn" data-action="inc">+</button>
+      </div>
+      <div class="plate-row"></div>
+      <div class="rest-row" data-rest-row>
+        <div class="bar-track" style="flex:1;"><div class="bar-fill" data-rest-fill style="width:100%"></div></div>
+        <div class="status" data-rest-time></div>
+        <button class="rest-skip" data-action="skip">Saltar</button>
+      </div>
+    `;
+    card.querySelector('[data-action="dec"]').addEventListener('click', () => rSetWeight(ex, rGetWeight(ex) - 2.5));
+    card.querySelector('[data-action="inc"]').addEventListener('click', () => rSetWeight(ex, rGetWeight(ex) + 2.5));
+    card.querySelector('[data-action="skip"]').addEventListener('click', rStopRest);
+    const plateRow = card.querySelector('.plate-row');
+    for (let i = 0; i < ex.sets; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'plate' + (i < done ? ' filled' : '');
+      btn.addEventListener('click', () => rTapPlate(ex, i));
+      plateRow.appendChild(btn);
+    }
+    container.appendChild(card);
+  });
+  const finishBtn = document.getElementById('finishRutinaBtn');
+  const hint = document.getElementById('finishHint');
+  const progress = rAnyProgress();
+  finishBtn.disabled = !progress;
+  finishBtn.style.opacity = progress ? '1' : '.5';
+  finishBtn.textContent = rAllDone() ? 'Finalizar sesión — todo completo' : 'Finalizar sesión';
+  hint.style.display = (progress && !rAllDone()) ? 'block' : 'none';
+  document.getElementById('rutinaExStatus').textContent = 'Rutina ' + rGetDay();
+  rRenderRestUI();
+}
+function rRenderRestUI() {
+  document.querySelectorAll('[data-rest-row]').forEach((row) => row.classList.remove('active'));
+  if (!rRestTimer) return;
+  const card = document.querySelector(`.ex-card[data-ex-id="${rRestTimer.exId}"]`);
+  if (!card) return;
+  const row = card.querySelector('[data-rest-row]');
+  row.classList.add('active');
+  row.querySelector('[data-rest-fill]').style.width = (rRestTimer.secondsLeft / REST_SECONDS * 100) + '%';
+  row.querySelector('[data-rest-time]').textContent = rRestTimer.secondsLeft + 's';
+}
+
+function rRenderHistory() {
+  const tbody = document.querySelector('#rutinaHistTable tbody');
+  tbody.innerHTML = '';
+  document.getElementById('rutinaHistCount').textContent = rState.history.length;
+  rState.history.forEach((h, idx) => {
+    const tr = document.createElement('tr');
+    const detail = h.exercises.map(e => `${e.name} ${e.weight}kg ${e.setsDone}/${e.setsTarget}`).join(' · ');
+    const dateCell = document.createElement('td');
+    if (rEditingHistIndex === idx) {
+      const input = document.createElement('input');
+      input.type = 'datetime-local';
+      input.value = toInputValue(h.date);
+      input.style.cssText = "background:var(--bg); border:1px solid var(--border); border-radius:6px; color:var(--text); font-family:'IBM Plex Mono'; font-size:11px; padding:4px;";
+      input.addEventListener('change', () => {
+        rState.history[idx].date = fromInputValue(input.value);
+        rEditingHistIndex = null; rSaveState(); rRenderHistory();
+      });
+      input.addEventListener('blur', () => { rEditingHistIndex = null; rRenderHistory(); });
+      dateCell.appendChild(input);
+      setTimeout(() => input.focus(), 0);
+    } else {
+      const btn = document.createElement('button');
+      btn.className = 'hist-date-btn';
+      btn.textContent = formatDateShort(h.date);
+      btn.addEventListener('click', () => { rEditingHistIndex = idx; rRenderHistory(); });
+      dateCell.appendChild(btn);
+    }
+    tr.appendChild(dateCell);
+    const dayCell = document.createElement('td'); dayCell.textContent = h.day; tr.appendChild(dayCell);
+    const detailCell = document.createElement('td'); detailCell.style.fontSize = '10px'; detailCell.textContent = detail; tr.appendChild(detailCell);
+    const awCell = document.createElement('td'); awCell.style.fontSize = '10px';
+    const awParts = [];
+    if (h.appleWatchWarmup) awParts.push(`Calent: ${h.appleWatchWarmup.calorias ?? '—'}kcal, ${h.appleWatchWarmup.fcPromedio ?? '—'}bpm`);
+    if (h.appleWatchRutina) awParts.push(`5x5: ${h.appleWatchRutina.calorias ?? '—'}kcal, ${h.appleWatchRutina.fcPromedio ?? '—'}bpm`);
+    awCell.textContent = awParts.length ? awParts.join(' · ') : '—';
+    tr.appendChild(awCell);
+    const actionCell = document.createElement('td');
+    const delBtn = document.createElement('button');
+    delBtn.className = 'ghost';
+    delBtn.textContent = 'borrar';
+    delBtn.addEventListener('click', () => {
+      if (!confirm('¿Borrar esta sesión del historial? Esto no se puede deshacer.')) return;
+      rState.history.splice(idx, 1);
+      rSaveState();
+      rRenderHistory();
+    });
+    actionCell.appendChild(delBtn);
+    tr.appendChild(actionCell);
+    tbody.appendChild(tr);
+  });
+}
+
+function rRender() {
+  const day = rGetDay();
+  document.getElementById('rutinaDayTitle').textContent = 'RUTINA ' + day;
+  document.getElementById('rutinaDaySub').textContent = `Sesión ${rState.sessionIndex + 1}`;
+  document.getElementById('pickRutinaA').style.background = day === 'A' ? 'var(--accent)' : '';
+  document.getElementById('pickRutinaA').style.color = day === 'A' ? '#04141C' : '';
+  document.getElementById('pickRutinaB').style.background = day === 'B' ? 'var(--accent)' : '';
+  document.getElementById('pickRutinaB').style.color = day === 'B' ? '#04141C' : '';
+  const dateInput = document.getElementById('rutinaDateInput');
+  if (document.activeElement !== dateInput) dateInput.value = toInputValue(rState.currentSessionDate);
+  rRenderWarmup();
+  rRenderExercises();
+  rRenderHistory();
+}
+
+document.getElementById('pickRutinaA').addEventListener('click', () => rSetDay('A'));
+document.getElementById('pickRutinaB').addEventListener('click', () => rSetDay('B'));
+document.getElementById('finishRutinaBtn').addEventListener('click', rFinishSession);
+document.getElementById('rutinaDateInput').addEventListener('change', (e) => {
+  rState.currentSessionDate = fromInputValue(e.target.value);
+  rSaveState();
+});
+
+// ---- Auto-guardar antes de cambiar de pestaña o página ----
+async function autoSaveAllForms(){
+  const otrosForm = document.getElementById('otrosForm');
+  if(otrosForm.tipo.value.trim() && otrosForm.checkValidity()){
+    otrosForm.requestSubmit();
+  }
+}
+
+// ---- Pestañas ----
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    await autoSaveAllForms();
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('section.view').forEach(v=>v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.page-nav a:not(.current)').forEach(link=>{
+  link.addEventListener('click', async (e)=>{
+    e.preventDefault();
+    await autoSaveAllForms();
+    window.location.href = link.href;
+  });
+});
+
+// ---- Otros ejercicios ----
+let otrosLog = [];
+
+async function otrosLoadAll(){
+  try{
+    const o = await window.storage.get('otros-ejercicios-log');
+    otrosLog = o ? JSON.parse(o.value) : [];
+  }catch(e){ otrosLog = []; }
+  otrosRenderAll();
+}
+async function otrosSave(){ await window.storage.set('otros-ejercicios-log', JSON.stringify(otrosLog)); }
+
+function otrosRenderAll(){
+  const sorted = [...otrosLog].sort((a,b)=> b.date.localeCompare(a.date));
+  const tbody = document.querySelector('#otrosTable tbody');
+  tbody.innerHTML = sorted.map((e,idx)=> `
+    <tr>
+      <td>${e.date}</td><td>${e.tipo}</td><td>${e.duracion ?? '—'}</td><td>${e.calorias ?? '—'}</td><td>${e.distancia ?? '—'}</td>
+      <td><button class="ghost" onclick="otrosDelete(${otrosLog.indexOf(e)})">borrar</button></td>
+    </tr>`).join('');
+  document.getElementById('otrosStatus').textContent = `${otrosLog.length} registro(s)`;
+}
+
+async function otrosDelete(realIdx){
+  otrosLog.splice(realIdx, 1);
+  await otrosSave();
+  otrosRenderAll();
+}
+
+document.getElementById('otrosForm').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  otrosLog.push({
+    date: fd.get('date') || todayISO(),
+    tipo: fd.get('tipo'),
+    duracion: fd.get('duracion') ? parseFloat(fd.get('duracion')) : null,
+    calorias: fd.get('calorias') ? parseFloat(fd.get('calorias')) : null,
+    distancia: fd.get('distancia') ? parseFloat(fd.get('distancia')) : null,
+  });
+  await otrosSave();
+  e.target.reset();
+  document.querySelector('#otrosForm [name=date]').value = todayISO();
+  otrosRenderAll();
+});
+
+// ---- Importar captura (Apple Fitness, etc.) ----
+function otrosResizeToBase64(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e=>{ img.src = e.target.result; };
+    reader.onerror = reject;
+    img.onload = ()=>{
+      let w = img.width, h = img.height;
+      if(w > h && w > maxDim){ h = h*(maxDim/w); w = maxDim; }
+      else if(h > maxDim){ w = w*(maxDim/h); h = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('otrosShotInput').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const statusEl = document.getElementById('otrosShotStatus');
+  statusEl.textContent = 'Leyendo captura...';
+  try{
+    const base64 = await otrosResizeToBase64(file, 1024, 0.8);
+    const res = await fetch('/api/extract-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64, type: 'workout' }),
+    });
+    const result = await res.json();
+    if(!result.ok){ statusEl.textContent = result.error || 'No se pudo leer la captura.'; return; }
+    const d = result.data;
+    const form = document.getElementById('otrosForm');
+    if(d.date) form.date.value = d.date;
+    if(d.tipo) form.tipo.value = d.tipo;
+    if(d.duracion != null) form.duracion.value = d.duracion;
+    if(d.calorias != null) form.calorias.value = d.calorias;
+    if(d.distancia != null) form.distancia.value = d.distancia;
+    statusEl.textContent = 'Registrado automáticamente.';
+    document.getElementById('otrosForm').requestSubmit();
+  }catch(err){
+    statusEl.textContent = 'No se pudo procesar la imagen.';
+  }
+});
+
+otrosLoadAll();
+
+// ---- Importar captura de Apple Watch ----
+function awResizeToBase64(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e=>{ img.src = e.target.result; };
+    reader.onerror = reject;
+    img.onload = ()=>{
+      let w = img.width, h = img.height;
+      if(w > h && w > maxDim){ h = h*(maxDim/w); w = maxDim; }
+      else if(h > maxDim){ w = w*(maxDim/h); h = maxDim; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.8).split(',')[1]);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function setupAppleWatchImport(prefix, inputId, statusId){
+  document.getElementById(inputId).addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const statusEl = document.getElementById(statusId);
+    statusEl.textContent = 'Leyendo captura...';
+    try{
+      const base64 = await awResizeToBase64(file, 1024, 0.8);
+      const res = await fetch('/api/extract-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64, type: 'applewatch' }),
+      });
+      const result = await res.json();
+      if(!result.ok){ statusEl.textContent = result.error || 'No se pudo leer la captura.'; return; }
+      const d = result.data;
+      if(d.duracion != null) document.getElementById(`aw${prefix}Duracion`).value = d.duracion;
+      if(d.calorias != null) document.getElementById(`aw${prefix}Calorias`).value = d.calorias;
+      if(d.fcPromedio != null) document.getElementById(`aw${prefix}Fc`).value = d.fcPromedio;
+      rSaveAppleWatchField(prefix);
+      statusEl.textContent = 'Datos leídos y guardados — se incluirán al finalizar la sesión.';
+    }catch(err){
+      statusEl.textContent = 'No se pudo procesar la imagen.';
+    }
+  });
+}
+setupAppleWatchImport('Warmup', 'awWarmupShotInput', 'awWarmupShotStatus');
+setupAppleWatchImport('Rutina', 'awRutinaShotInput', 'awRutinaShotStatus');
+
+['Warmup', 'Rutina'].forEach((prefix) => {
+  ['Duracion', 'Calorias', 'Fc'].forEach((f) => {
+    document.getElementById(`aw${prefix}${f}`).addEventListener('change', () => rSaveAppleWatchField(prefix));
+  });
+});
+
+(async () => { await rLoadState(); rRestoreAppleWatchFields(); rRender(); })();
+
+// default dates to today
+document.querySelectorAll('input[type=date]').forEach(inp=> inp.value = todayISO());
+
+loadAll();
+</script>
+</div>
+</body>
+</html>
