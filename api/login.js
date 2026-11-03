@@ -7,11 +7,35 @@ function hashPassword(password, salt) {
 async function kv(path, opts) {
   const KV_URL = process.env.KV_REST_API_URL;
   const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+  if (!KV_URL || !KV_TOKEN) {
+    throw new Error('Faltan las variables KV_REST_API_URL / KV_REST_API_TOKEN');
+  }
   const r = await fetch(`${KV_URL}${path}`, {
     ...opts,
     headers: { Authorization: `Bearer ${KV_TOKEN}`, ...(opts?.headers || {}) },
   });
-  return r.json();
+  const text = await r.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`Upstash respondió ${r.status} sin JSON: ${text.slice(0, 200)}`);
+  }
+  if (!r.ok || data.error) {
+    throw new Error(`Upstash ${r.status}: ${data.error || text.slice(0, 200)}`);
+  }
+  return data;
+}
+
+// Lee la lista de usuarios tolerando datos guardados dos veces como texto.
+function parseUsers(raw) {
+  if (!raw) return [];
+  let users = JSON.parse(raw);
+  if (typeof users === 'string') users = JSON.parse(users);
+  if (!Array.isArray(users)) {
+    throw new Error('bitacora:__users__ no es una lista (tipo: ' + typeof users + ')');
+  }
+  return users;
 }
 
 export default async function handler(req, res) {
@@ -23,27 +47,37 @@ export default async function handler(req, res) {
     return res.status(400).json({ ok: false, error: 'Falta usuario o contraseña' });
   }
 
+  let step = 'leer usuarios';
   try {
     const usersRes = await kv('/get/bitacora:__users__');
-    const users = usersRes.result ? JSON.parse(usersRes.result) : [];
+
+    step = 'interpretar usuarios';
+    const users = parseUsers(usersRes.result);
 
     if (users.length === 0) {
       return res.status(404).json({ ok: false, error: 'NO_USERS' });
     }
 
-    const user = users.find(u => u.username.toLowerCase() === String(username).toLowerCase());
+    step = 'buscar usuario';
+    const wanted = String(username).trim().toLowerCase();
+    const user = users.find(u => u && typeof u.username === 'string' && u.username.toLowerCase() === wanted);
     if (!user) {
       return res.status(401).json({ ok: false, error: 'Usuario o contraseña incorrectos' });
     }
+    if (!user.salt || !user.hash) {
+      console.error('[login] El usuario no tiene salt/hash:', user.username);
+      return res.status(500).json({ ok: false, error: 'Esta cuenta no tiene contraseña guardada. Pide al admin que la vuelva a crear.' });
+    }
 
-    const testHash = hashPassword(password, user.salt);
-    const testBuf = Buffer.from(testHash, 'hex');
+    step = 'verificar contraseña';
+    const testBuf = Buffer.from(hashPassword(password, user.salt), 'hex');
     const realBuf = Buffer.from(user.hash, 'hex');
     const match = testBuf.length === realBuf.length && crypto.timingSafeEqual(testBuf, realBuf);
     if (!match) {
       return res.status(401).json({ ok: false, error: 'Usuario o contraseña incorrectos' });
     }
 
+    step = 'guardar sesión';
     const token = crypto.randomBytes(24).toString('hex');
     const pages = user.pages || ['ejercicio', 'comida', 'medidas', 'taekwondo'];
     const session = { userId: user.id, username: user.username, name: user.name, role: user.role, pages };
@@ -56,6 +90,10 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ ok: true, token, role: user.role, name: user.name, userId: user.id, pages });
   } catch (err) {
-    return res.status(500).json({ ok: false, error: 'Error al iniciar sesión' });
+    console.error(`[login] Falló al ${step}:`, err);
+    return res.status(500).json({
+      ok: false,
+      error: `Error al iniciar sesión (${step}): ${err && err.message ? err.message : err}`,
+    });
   }
 }
